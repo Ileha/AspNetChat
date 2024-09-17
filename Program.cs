@@ -1,5 +1,6 @@
 namespace AspNetChat
 {
+
     public class Program
     {
         public static void Main(string[] args)
@@ -10,6 +11,8 @@ namespace AspNetChat
             //app.MapGet("/", () => "Hello World!");
             //app.UseWelcomePage();
             //app.Run(async (context) => await context.Response.WriteAsync("Hello METANIT.COM"));
+
+            app.UseMiddleware<TokenMiddleware>("123");
 
             app.UseWhen(
             context => context.Request.Path == "/time", // если путь запроса "/time"
