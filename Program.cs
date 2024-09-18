@@ -39,6 +39,8 @@ namespace AspNetChat
 
             app.Map("/users/{id:int:range(0, 1000)}", (int id) => $"User Id: {id}");
 
+            app.Map("/users/params", (int id) => $"User params Id: {id}");
+
             app.Map(
                 "map2/{controller=Home}/{action=Index}/{id?}",
                 (string controller, string action, string? id) =>
