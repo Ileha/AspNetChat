@@ -1,0 +1,11 @@
+﻿@page
+@model AspNetChat.Pages.IndexModel
+@if (Model.IsCorrect)
+{
+    <p>Name: <b>@Model.Name</b></p>
+    <p>Age: <b>@Model.Age</b></p>
+}
+else
+{
+    <p>incorrect data</p>
+}
