@@ -34,10 +34,22 @@ namespace AspNetChat
                 });
             });
 
-            app.Run(async context =>
-            {
-                await context.Response.WriteAsync("Hello METANIT.COM");
-            });
+            app.MapGet("/routes",
+                (IEnumerable<EndpointDataSource> endpointSources) => string.Join("\n", endpointSources.SelectMany(source => source.Endpoints)));
+
+            app.Map("/users/{id:int:range(0, 1000)}", (int id) => $"User Id: {id}");
+
+            app.Map(
+                "map2/{controller=Home}/{action=Index}/{id?}",
+                (string controller, string action, string? id) =>
+                    $"Controller: {controller} \nAction: {action} \nId: {id}"
+            );
+
+            app.Map("map3/{**info}", (string? info) => $"map3 info: {info ?? "n/a"}");
+
+            app.Map("map4/{*info}", (string? info) => $"map4 info: {info ?? "n/a"}");
+
+            app.Map("/", () => "Hello METANIT.COM");
 
             app.Run();
         }
