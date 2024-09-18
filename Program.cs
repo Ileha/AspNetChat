@@ -14,6 +14,9 @@ namespace AspNetChat
 
             app.UseMiddleware<TokenMiddleware>("123");
 
+            app.UseDefaultFiles();  // поддержка страниц html по умолчанию
+            app.UseStaticFiles();   // добавляем поддержку статических файлов
+
             app.UseWhen(
             context => context.Request.Path == "/time", // если путь запроса "/time"
             appBuilder =>
@@ -51,7 +54,7 @@ namespace AspNetChat
 
             app.Map("map4/{*info}", (string? info) => $"map4 info: {info ?? "n/a"}");
 
-            app.Map("/", () => "Hello METANIT.COM");
+            //app.Map("/", () => "Hello METANIT.COM");
 
             app.Run();
         }
