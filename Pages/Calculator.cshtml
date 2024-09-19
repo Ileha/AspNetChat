@@ -1,11 +1,13 @@
 ﻿@page
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 @model AspNetChat.Pages.CalculatorModel
 @{
-    ViewData["Title"] = "Обмен валюты";
+    ViewData["Title"] = "Calculator";
 }
 
 <h2>@Model.Message</h2>
 <form method="post">
-    <input type="number" name="sum" />
-    <input type="submit" value="Send" />
+    <input type="text" name="num1" />
+    <input type="text" name="num2" />
+    <input type="submit" value="Add" />
 </form>

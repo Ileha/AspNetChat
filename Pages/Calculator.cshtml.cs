@@ -6,23 +6,23 @@ namespace AspNetChat.Pages
     public class CalculatorModel : PageModel
     {
         public string Message { get; set; }
-        private readonly decimal currentRate = 64.1m;
+
         public void OnGet()
         {
-            Message = "Введите сумму";
+            Message = "Enter values";
         }
-        public void OnPost(int? sum)
+
+        public void OnPost(float? num1, float? num2)
         {
-            if (sum == null || sum < 1000)
+            if (!num1.HasValue || !num2.HasValue) 
             {
-                Message = "Передана некорректная сумма. Повторите ввод";
+                Message = "incorrect data";
+                return;
             }
-            else
-            {
-                decimal result = sum.Value / currentRate;
-                // ToString("F2") - форматирование числа: F2 - дробное число с 2 знаками после запятой
-                Message = $"При обмене {sum} рублей вы получите {result.ToString("F2")}$.";
-            }
+
+            var result = num1 + num2;
+
+            Message = $"summ of {num1} and {num2} is {result}.";
         }
     }
 }
