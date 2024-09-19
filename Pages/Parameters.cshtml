@@ -1,0 +1,5 @@
+﻿@page "{id:int?}/{name}/{age:int?}"
+@model AspNetChat.Pages.ParametersModel
+<p>Id = @(Model.Id.HasValue ? Model.Id : "n/a")</p>
+<p>Name = @Model.Name</p>
+<p>Age = @(Model.Age.HasValue ? Model.Age : "n/a")</p>
