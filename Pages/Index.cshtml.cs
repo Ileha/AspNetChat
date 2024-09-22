@@ -5,18 +5,23 @@ namespace AspNetChat.Pages
 {
     public class IndexModel : PageModel
     {
-		public string Name { get; set; }
-		public int? Age { get; set; }
-		public bool IsCorrect { get; set; } = true;
-		public void OnGet(string name, int? age)
+		public void OnGet()
 		{
-			if (age == null || age < 1 || age > 110 || string.IsNullOrEmpty(name))
-			{
-				IsCorrect = false;
-				return;
-			}
-			Age = age;
-			Name = name;
+			
 		}
-	}
+        public void OnPostCalculator()
+        {
+            Response.Redirect("/Calculator");
+        }
+
+        public void OnPostParameters()
+        {
+            Response.Redirect("/Parameters/5/Tom/30");
+        }
+
+        public void OnPostPerson()
+        {
+            Response.Redirect("/Person");
+        }
+    }
 }
