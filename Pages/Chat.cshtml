@@ -1,0 +1,16 @@
+﻿@page
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@model AspNetChat.Pages.ChatModel
+@{
+    ViewData["Title"] = "Chat";
+}
+<div style="white-space:pre">
+    <h2>@Model.Message</h2>
+</div>
+<form method="post">
+    <label for="chatName">Chat name:</label><br>
+    <input type="text" id="chatName" name="chatName" value="@(Model.ChatName)"><br>
+    <label for="userName">User name:</label><br>
+    <input type="text" id="userName" name="userName" value="@(Model.UserName)"><br>
+    <input type="submit" asp-page-handler="Chatting" value="Start chatting" />
+</form>

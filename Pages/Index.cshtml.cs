@@ -23,5 +23,10 @@ namespace AspNetChat.Pages
         {
             Response.Redirect("/Person");
         }
+
+        public void OnPostChat()
+        {
+            Response.Redirect("/Chat");
+        }
     }
 }

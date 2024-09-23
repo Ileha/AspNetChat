@@ -1,3 +1,8 @@
+using AspNetChat.Core.Factories;
+using AspNetChat.Core.Interfaces;
+using AspNetChat.Core.Interfaces.Factories;
+using AspNetChat.Core.Model;
+
 namespace AspNetChat
 {
 
@@ -7,8 +12,12 @@ namespace AspNetChat
         {
 			var builder = WebApplication.CreateBuilder(args);
 
-			// Add services to the container.
-			builder.Services.AddRazorPages();
+            builder.Services.AddSingleton<IChatContainer, ChatDataModel>();
+            builder.Services.AddSingleton<IFactory<ChatFactory.ChatParams, IChat>, ChatFactory>();
+            builder.Services.AddSingleton<IFactory<ParticipantFactory.ParticipantParams, IChatPartisipant>, ParticipantFactory>();
+
+            // Add services to the container.
+            builder.Services.AddRazorPages();
 
 			var app = builder.Build();
 
