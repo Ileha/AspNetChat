@@ -1,7 +1,10 @@
 using AspNetChat.Core.Factories;
 using AspNetChat.Core.Interfaces;
 using AspNetChat.Core.Interfaces.Factories;
+using AspNetChat.Core.Interfaces.Services;
 using AspNetChat.Core.Model;
+using AspNetChat.Core.Services;
+using Microsoft.AspNetCore.Builder;
 
 namespace AspNetChat
 {
@@ -15,6 +18,7 @@ namespace AspNetChat
             builder.Services.AddSingleton<IChatContainer, ChatDataModel>();
             builder.Services.AddSingleton<IFactory<ChatFactory.ChatParams, IChat>, ChatFactory>();
             builder.Services.AddSingleton<IFactory<ParticipantFactory.ParticipantParams, IChatPartisipant>, ParticipantFactory>();
+			builder.Services.AddSingleton<IMessageListPublisherService, MessageListPublisherService>();
 
             // Add services to the container.
             builder.Services.AddRazorPages();
@@ -29,9 +33,28 @@ namespace AspNetChat
 				app.UseHsts();
 			}
 
-            #region test
+            app.UseWebSockets();
+			app.Map("/ws", (IApplicationBuilder app) => 
+			{
+				app.UseMiddleware<WebSocketEndpoint>();
 
-   //         app.UseWhen(
+				//app.Map("/ChatHandler", (IApplicationBuilder app) => app.UseMiddleware<MessageListPublisherService>());
+			});
+
+			app.Map("/ChatHandler/{chatName}", 
+				(string chatName, HttpContext context, IMessageListPublisherService messageListPublisherService) => 
+				{
+					return $"got {chatName}!!!";
+				});
+
+			//app.Map(new PathString("/test/{data}"), (IApplicationBuilder app) =>
+			//{
+			//	app.UseMiddleware<MessageListPublisherService>();
+			//});
+
+			#region test
+
+			//         app.UseWhen(
 			//context => context.Request.Path == "/time", // если путь запроса "/time"
 			//appBuilder =>
 			//{
@@ -51,8 +74,8 @@ namespace AspNetChat
 			//	});
 			//});
 
-			//app.MapGet("/routes",
-			//	(IEnumerable<EndpointDataSource> endpointSources) => string.Join("\n", endpointSources.SelectMany(source => source.Endpoints)));
+			app.MapGet("/routes",
+				(IEnumerable<EndpointDataSource> endpointSources) => string.Join("\n", endpointSources.SelectMany(source => source.Endpoints)));
 
 			//app.Map("/users/{id:int:range(0, 1000)}", (int id) => $"User Id: {id}");
 
@@ -68,10 +91,10 @@ namespace AspNetChat
 
 			//app.Map("map4/{*info}", (string? info) => $"map4 info: {info ?? "n/a"}");
 
-            #endregion
+			#endregion
 
 
-            app.UseHttpsRedirection();
+			app.UseHttpsRedirection();
 			app.UseStaticFiles();
 
 			app.UseRouting();
@@ -82,5 +105,10 @@ namespace AspNetChat
 
 			app.Run();
 		}
-    }
+
+		private static void UseMessageListPublisher(IApplicationBuilder app, string chatName)
+		{
+			app.UseMiddleware<MessageListPublisherService>();
+		}
+	}
 }

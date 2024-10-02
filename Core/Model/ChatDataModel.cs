@@ -3,6 +3,7 @@ using AspNetChat.Core.Interfaces;
 using AspNetChat.Core.Interfaces.Factories;
 using System.Security.Cryptography;
 using System.Text;
+using System.Xml.Linq;
 
 namespace AspNetChat.Core.Model
 {
@@ -29,11 +30,27 @@ namespace AspNetChat.Core.Model
 
         public IChat GetChatByName(string name)
         {
-            using var md5 = MD5.Create();
-            var hash = md5.ComputeHash(Encoding.UTF8.GetBytes(name));
-            var result = new Guid(hash);
-
-            return GetChatById(result);
+            var chatGuid = GetGuidFromName(name);
+			return GetChatById(chatGuid);
         }
-    }
+
+		public bool HasChat(string name)
+		{
+			var chatGuid = GetGuidFromName(name);
+
+			return HasChat(chatGuid);
+		}
+
+		public bool HasChat(Guid chatId)
+		{
+			return _chats.ContainsKey(chatId);
+		}
+
+        private Guid GetGuidFromName(string name) 
+        {
+			using var md5 = MD5.Create();
+			var hash = md5.ComputeHash(Encoding.UTF8.GetBytes(name));
+			return new Guid(hash);
+		}
+	}
 }

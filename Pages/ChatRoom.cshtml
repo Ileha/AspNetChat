@@ -2,6 +2,23 @@
 @model AspNetChat.Pages.ChatRoomModel
 @{
 }
-<div style="white-space:pre">
-	@(Model.MessagesList)
-</div>
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" type="text/css" href="ChatRoom.css">
+	<title>Chat Interface</title>
+</head>
+
+<body>
+	<div class="chat-container">
+		<div class="chat-history" id="chat-history">
+			<p>@(Model.MessagesList)</p>
+			<p class="user">You: Hello!</p>
+		</div>
+		<div class="chat-input-container">
+			<input type="text" id="chat-input" placeholder="Type your message here...">
+			<button onclick="sendMessage()">Send</button>
+		</div>
+	</div>
+</body>
