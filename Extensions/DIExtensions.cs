@@ -9,8 +9,8 @@
 		{
 			services.AddSingleton<TInstance>();
 
-			services.AddSingleton<TService1, TInstance>(x => x.GetService<TInstance>());
-			services.AddSingleton<ITService2, TInstance>(x => x.GetService<TInstance>());
+			services.AddSingleton<TService1, TInstance>(x => x.GetService<TInstance>()!);
+			services.AddSingleton<ITService2, TInstance>(x => x.GetService<TInstance>()!);
 		}
 
 		public static void BindSingletonInterfacesTo<TInstance>(this IServiceCollection services)
@@ -26,7 +26,7 @@
 
 			foreach (var targetType in types)
 			{
-				services.AddSingleton(targetType, x => x.GetService<TInstance>());
+				services.AddSingleton(targetType, x => x.GetService<TInstance>()!);
 			}
 
 		}

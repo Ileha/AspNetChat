@@ -1,6 +1,6 @@
 ﻿using AspNetChat.Core.Interfaces;
 
-namespace AspNetChat.Core.Model
+namespace AspNetChat.Core.Entities.Model
 {
     public class ChatParticipant : IChatPartisipant
     {
@@ -8,7 +8,7 @@ namespace AspNetChat.Core.Model
 
         public Guid Id { get; }
 
-        public ChatParticipant(string name, Guid guid) 
+        public ChatParticipant(string name, Guid guid)
         {
             Name = name ?? throw new ArgumentNullException(nameof(name));
             Id = guid;

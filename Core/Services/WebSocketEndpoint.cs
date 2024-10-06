@@ -1,23 +1,8 @@
-﻿using AspNetChat.Core.Interfaces.Services;
-using System.Net;
+﻿using System.Net;
 
 namespace AspNetChat.Core.Services
 {
-    public class MessageListPublisherService : IMessageListPublisherService
-	{
-		public MessageListPublisherService() 
-        {
-
-		}
-
-        public async Task InvokeAsync(HttpContext context) 
-        {
-
-        }
-
-	}
-
-    public class WebSocketEndpoint
+	public class WebSocketEndpoint
     {
         private readonly RequestDelegate _next;
 

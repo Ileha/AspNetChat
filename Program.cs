@@ -1,10 +1,10 @@
+using AspNetChat.Core.Entities.Model;
 using AspNetChat.Core.Factories;
 using AspNetChat.Core.Interfaces;
 using AspNetChat.Core.Interfaces.Factories;
 using AspNetChat.Core.Interfaces.Services;
-using AspNetChat.Core.Model;
 using AspNetChat.Core.Services;
-using Microsoft.AspNetCore.Builder;
+using AspNetChat.Extensions;
 
 namespace AspNetChat
 {
@@ -18,7 +18,9 @@ namespace AspNetChat
             builder.Services.AddSingleton<IChatContainer, ChatDataModel>();
             builder.Services.AddSingleton<IFactory<ChatFactory.ChatParams, IChat>, ChatFactory>();
             builder.Services.AddSingleton<IFactory<ParticipantFactory.ParticipantParams, IChatPartisipant>, ParticipantFactory>();
-			builder.Services.AddSingleton<IMessageListPublisherService, MessageListPublisherService>();
+			builder.Services.BindSingletonInterfacesTo<MessageListPublisherService>();
+			builder.Services.AddSingleton<DisposeService>();
+
 
             // Add services to the container.
             builder.Services.AddRazorPages();
@@ -41,10 +43,10 @@ namespace AspNetChat
 				//app.Map("/ChatHandler", (IApplicationBuilder app) => app.UseMiddleware<MessageListPublisherService>());
 			});
 
-			app.Map("/ChatHandler/{chatName}", 
-				(string chatName, HttpContext context, IMessageListPublisherService messageListPublisherService) => 
+			app.Map("/ChatHandler/{chatID}", 
+				async (string chatID, string userID, HttpContext context, IMessageListPublisherService messageListPublisherService) => 
 				{
-					return $"got {chatName}!!!";
+					await messageListPublisherService.InvokeAsync(userID, chatID, context);
 				});
 
 			//app.Map(new PathString("/test/{data}"), (IApplicationBuilder app) =>
@@ -104,6 +106,8 @@ namespace AspNetChat
 			app.MapRazorPages();
 
 			app.Run();
+
+			app.Services.GetService<DisposeService>()?.Dispose();
 		}
 
 		private static void UseMessageListPublisher(IApplicationBuilder app, string chatName)
