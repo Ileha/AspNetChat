@@ -8,13 +8,14 @@ using Newtonsoft.Json;
 using System.Collections.Concurrent;
 using System.Net;
 using System.Net.WebSockets;
-using System.Text;
 
 namespace AspNetChat.Core.Services
 {
 	public class MessageListPublisherService : IMessageListPublisherService, IMessageConsumerService, IDisposable
 	{
 		private readonly IChatContainer _chatContainer;
+		private readonly ChatUserHelper _chatUserHelper;
+
 		/// <summary>
 		/// key is chat
 		/// </summary>
@@ -23,9 +24,12 @@ namespace AspNetChat.Core.Services
 		private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
 		private readonly CancellationToken _cancellationToken;
 
-		public MessageListPublisherService(IChatContainer chatContainer)
+		public MessageListPublisherService(
+			IChatContainer chatContainer, 
+			ChatUserHelper chatUserHelper)
 		{
 			_chatContainer = chatContainer ?? throw new ArgumentNullException(nameof(chatContainer));
+			_chatUserHelper = chatUserHelper ?? throw new ArgumentNullException(nameof(chatUserHelper));
 			_cancellationToken = _cancellationTokenSource.Token;
 		}
 
@@ -43,35 +47,24 @@ namespace AspNetChat.Core.Services
 			);
 		}
 
-		public async Task InvokeAsync(string userID, string chatID, HttpContext context)
+		public async Task ConectWebSocket(string userID, string chatID, HttpContext context)
 		{
-			if (!Guid.TryParse(chatID, out var chatGuid))
+			var message = string.Empty;
+			var statusCode = HttpStatusCode.InternalServerError;
+
+			if (!_chatUserHelper.GetUserAndChatID(userID, chatID, out statusCode, out message, out var userGuid, out var chatGuid)) 
 			{
-				context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
-				await context.Response.WriteAsync("incorrect chat id");
+				context.Response.StatusCode = (int) statusCode;
+				await context.Response.WriteAsync(message);
+
 				return;
 			}
 
-			if (!Guid.TryParse(userID, out var userGuid))
+			if (!_chatUserHelper.GetUserAndChat(userGuid, chatGuid, out statusCode, out message, out var chat)) 
 			{
-				context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
-				await context.Response.WriteAsync("incorrect user id");
-				return;
-			}
+				context.Response.StatusCode = (int)statusCode;
+				await context.Response.WriteAsync(message);
 
-			if (!_chatContainer.HasChat(chatGuid))
-			{
-				context.Response.StatusCode = (int)HttpStatusCode.NotFound;
-				await context.Response.WriteAsync("chat not found");
-				return;
-			}
-
-			var chat = _chatContainer.GetChatById(chatGuid);
-
-			if (!chat.HasPartisipant((Identifiable)userGuid))
-			{
-				context.Response.StatusCode = (int)HttpStatusCode.NotFound;
-				await context.Response.WriteAsync("user not found");
 				return;
 			}
 
@@ -87,7 +80,7 @@ namespace AspNetChat.Core.Services
 				},
 				(chatId, item) => item);
 
-			var userConnection = new UserConnection(webSocket, chat, (Identifiable)userGuid);
+			var userConnection = new UserConnection(webSocket, chat, (Identifiable)userGuid, _cancellationToken);
 
 			var actualUserConnection = chatData.Connections.AddOrUpdate((Identifiable)userGuid, userConnection, 
 				(_, oldUserConnection) => 
@@ -98,7 +91,7 @@ namespace AspNetChat.Core.Services
 				}
 			);
 
-			HandleUserWebSocket(actualUserConnection, _cancellationToken);
+			HandleUserWebSocket(actualUserConnection, userConnection.CancellationToken);
 		}
 
 		public void Dispose()
@@ -141,15 +134,35 @@ namespace AspNetChat.Core.Services
 			}
 		}
 
-		private record UserConnection(
-			WebSocket WebSocket,
-			IIdentifiable Chat,
-			IIdentifiable User)
-			: IDisposable
+		private class UserConnection : IDisposable
 		{
+			public WebSocket WebSocket { get; }
+			public IIdentifiable Chat { get; }
+			public IIdentifiable User { get; }
+			public CancellationToken CancellationToken { get; }
+
+			private readonly CancellationTokenSource _cancellationTokenSource;
+
+			public UserConnection(
+				WebSocket webSocket, 
+				IIdentifiable chat, 
+				IIdentifiable user,
+				CancellationToken token)
+			{
+				WebSocket = webSocket ?? throw new ArgumentNullException(nameof(webSocket));
+				Chat = chat ?? throw new ArgumentNullException(nameof(chat));
+				User = user ?? throw new ArgumentNullException(nameof(user));
+
+
+				_cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(token);
+				CancellationToken = _cancellationTokenSource.Token;
+			}
+
 			public void Dispose()
 			{
 				WebSocket.Dispose();
+				_cancellationTokenSource.Cancel();
+				_cancellationTokenSource.Dispose();
 			}
 		}
 

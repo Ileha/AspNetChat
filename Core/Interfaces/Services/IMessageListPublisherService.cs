@@ -3,6 +3,6 @@
 
 	public interface IMessageListPublisherService
 	{
-		Task InvokeAsync(string userID, string chatID, HttpContext context);
+		Task ConectWebSocket(string userID, string chatID, HttpContext context);
 	}
 }

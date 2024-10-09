@@ -20,10 +20,12 @@ namespace AspNetChat
             builder.Services.AddSingleton<IFactory<ParticipantFactory.ParticipantParams, IChatPartisipant>, ParticipantFactory>();
 			builder.Services.BindSingletonInterfacesTo<MessageListPublisherService>();
 			builder.Services.AddSingleton<DisposeService>();
+			builder.Services.AddSingleton<ChatUserHelper>();
+			builder.Services.BindSingletonInterfacesTo<DisconnectionService>();
 
 
-            // Add services to the container.
-            builder.Services.AddRazorPages();
+			// Add services to the container.
+			builder.Services.AddRazorPages();
 
 			var app = builder.Build();
 
@@ -46,7 +48,13 @@ namespace AspNetChat
 			app.Map("/ChatHandler/{chatID}", 
 				async (string chatID, string userID, HttpContext context, IMessageListPublisherService messageListPublisherService) => 
 				{
-					await messageListPublisherService.InvokeAsync(userID, chatID, context);
+					await messageListPublisherService.ConectWebSocket(userID, chatID, context);
+				});
+
+			app.MapPost("/UserDisconnected/{chatID}",
+				async (string chatID, string userID, HttpContext context, IDisconnectionService disconnectionService) =>
+				{
+					await disconnectionService.DisconnectUser(userID, chatID, context);
 				});
 
 			//app.Map(new PathString("/test/{data}"), (IApplicationBuilder app) =>
