@@ -22,7 +22,7 @@ namespace AspNetChat
 			builder.Services.AddSingleton<DisposeService>();
 			builder.Services.AddSingleton<ChatUserHelper>();
 			builder.Services.BindSingletonInterfacesTo<DisconnectionService>();
-
+			builder.Services.BindSingletonInterfacesTo<MessageReceiverService>();
 
 			// Add services to the container.
 			builder.Services.AddRazorPages();
@@ -55,6 +55,17 @@ namespace AspNetChat
 				async (string chatID, string userID, HttpContext context, IDisconnectionService disconnectionService) =>
 				{
 					await disconnectionService.DisconnectUser(userID, chatID, context);
+				});
+
+			app.MapPost("/UserSendMessage/{chatID}",
+				async (
+					string chatID, 
+					string userID, 
+					string message, 
+					HttpContext context, 
+					IMessageReceiverService messageReceiverService) =>
+				{
+					await messageReceiverService.ReceiveMessage(userID, chatID, message, context);
 				});
 
 			//app.Map(new PathString("/test/{data}"), (IApplicationBuilder app) =>
