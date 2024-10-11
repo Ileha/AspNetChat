@@ -9,7 +9,6 @@ using AspNetChat.Extensions;
 
 namespace AspNetChat
 {
-
     public class Program
     {
         public static void Main(string[] args)

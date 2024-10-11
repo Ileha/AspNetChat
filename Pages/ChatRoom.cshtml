@@ -1,4 +1,5 @@
 ﻿@page
+@* @using Newtonsoft.Json *@
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 @model AspNetChat.Pages.ChatRoomModel
 @{
@@ -9,13 +10,54 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<link rel="stylesheet" type="text/css" href="ChatRoom.css">
 	<title>Chat Interface</title>
+	<script>
+		window.onbeforeunload = function()
+		{
+			let disconnectURL = new URL("/UserDisconnected/@(Model.Chat!.Id)");
+
+			disconnectURL.searchParams.append("userID", "@(Model.ChatUser!.Id)");
+
+			fetch(disconnectURL.href,
+			{
+			  method: "POST",
+			  headers: {'Content-Type': 'application/json'}
+			})
+		}
+
+		function sendMessage()
+		{
+			let message = document.getElementById("chat-input").value;
+
+			let sendURL = new URL("/UserSendMessage/@(Model.Chat!.Id)");
+
+			sendURL.searchParams.append("userID", "@(Model.ChatUser!.Id)");
+			sendURL.searchParams.append("message", message);
+
+			fetch(sendURL.href,
+			{
+			  method: "POST",
+			  headers: {'Content-Type': 'application/json'}
+			})
+
+			document.getElementById("chat-input").value = "";
+		}
+
+		// function composeMessages(data)
+		// {
+		// 	let chatContainer = document.getElementById("chat-history");
+		// }
+
+		// let jsonData = "@(Newtonsoft.Json.JsonConvert.SerializeObject(Model.MessagesList))"
+
+		// composeMessages(JSON.parse(jsonData));
+	</script>
 </head>
 
 <body>
 	<div class="chat-container">
 		<div class="chat-history" id="chat-history">
-			<p>@(Model.MessagesList)</p>
-			<p class="user">You: Hello!</p>
+			@* <p>@(Model.MessagesList)</p>
+			<p class="user">You: Hello!</p> *@
 		</div>
 		<div class="chat-input-container">
 			<input type="text" id="chat-input" placeholder="Type your message here...">

@@ -1,5 +1,6 @@
 using AspNetChat.Core.Factories;
 using AspNetChat.Core.Interfaces;
+using AspNetChat.Core.Interfaces.ChatEvents;
 using AspNetChat.Core.Interfaces.Factories;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
@@ -10,8 +11,9 @@ namespace AspNetChat.Pages
         private readonly IChatContainer _chatContainer;
         private readonly IFactory<ParticipantFactory.ParticipantParams, IChatPartisipant> _participantFactory;
 
-        public string MessagesList { get; private set; } = string.Empty;
-        public IChatPartisipant? User { get; private set; }
+        public IReadOnlyList<IEvent> MessagesList { get; private set; } = Array.Empty<IEvent>();
+        public IChatPartisipant? ChatUser { get; private set; }
+        public IChat? Chat { get; private set; }
 
         public ChatRoomModel(
             IChatContainer chatContainer,
@@ -29,12 +31,12 @@ namespace AspNetChat.Pages
 
         public void OnGetJoinChatRoom(string chatName, string userName)
         {
-            var chatRoom = _chatContainer.GetChatByName(chatName);
+			Chat = _chatContainer.GetChatByName(chatName);
 
-            User = _participantFactory.Create(new ParticipantFactory.ParticipantParams(userName));
-            chatRoom.JoinParticipant(User);
+            ChatUser = _participantFactory.Create(new ParticipantFactory.ParticipantParams(userName));
+			Chat.JoinParticipant(ChatUser);
 
-            //MessagesList = chatRoom.GetChatMessageList();
+            MessagesList = Chat.GetChatMessageList();
         }
     }
 }
