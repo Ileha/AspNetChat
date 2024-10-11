@@ -128,10 +128,5 @@ namespace AspNetChat
 
 			app.Services.GetService<DisposeService>()?.Dispose();
 		}
-
-		private static void UseMessageListPublisher(IApplicationBuilder app, string chatName)
-		{
-			app.UseMiddleware<MessageListPublisherService>();
-		}
 	}
 }

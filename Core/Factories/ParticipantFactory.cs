@@ -1,6 +1,6 @@
-﻿using AspNetChat.Core.Interfaces;
+﻿using AspNetChat.Core.Entities.Model;
+using AspNetChat.Core.Interfaces;
 using AspNetChat.Core.Interfaces.Factories;
-using AspNetChat.Core.Model;
 using static AspNetChat.Core.Factories.ParticipantFactory;
 
 namespace AspNetChat.Core.Factories

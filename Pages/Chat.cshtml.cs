@@ -28,7 +28,12 @@ namespace AspNetChat.Pages
                 return Page();
             }
 
-            return RedirectToPage("/ChatRoom", "JoinChatRoom", new { ChatName, UserName });
-        }
-    }
+            return RedirectToPage("/ChatRoom", "JoinChatRoom", new { chatName = ChatName, userName = UserName });
+		}
+
+        public void OnPostChatting2()
+        {
+            Response.Redirect("/ChatRoom");
+		}
+	}
 }

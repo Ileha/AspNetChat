@@ -20,15 +20,10 @@
 
 			var type = typeof(TInstance);
 
-			var types = AppDomain.CurrentDomain.GetAssemblies()
-				.SelectMany(s => s.GetTypes())
-				.Where(p => p.IsInterface && type.IsAssignableFrom(p));
-
-			foreach (var targetType in types)
+			foreach (var targetType in type.GetInterfaces()) 
 			{
 				services.AddSingleton(targetType, x => x.GetService<TInstance>()!);
 			}
-
 		}
 	}
 }
