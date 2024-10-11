@@ -11,7 +11,7 @@ namespace AspNetChat.Pages
         private readonly IFactory<ParticipantFactory.ParticipantParams, IChatPartisipant> _participantFactory;
 
         public string MessagesList { get; private set; } = string.Empty;
-        //public IChatPartisipant? User { get; private set; }
+        public IChatPartisipant? User { get; private set; }
 
         public ChatRoomModel(
             IChatContainer chatContainer,
@@ -24,17 +24,17 @@ namespace AspNetChat.Pages
 
         public void OnGet()
         {
-            //Response.Redirect("/Chat");
+            Response.Redirect("/Chat");
         }
 
-   //     public void OnGetJoinChatRoom(string chatName, string userName) 
-   //     {
-   //         var chatRoom = _chatContainer.GetChatByName(chatName);
+        public void OnGetJoinChatRoom(string chatName, string userName)
+        {
+            var chatRoom = _chatContainer.GetChatByName(chatName);
 
-			//User = _participantFactory.Create(new ParticipantFactory.ParticipantParams(userName));
-   //         chatRoom.JoinParticipant(User);
+            User = _participantFactory.Create(new ParticipantFactory.ParticipantParams(userName));
+            chatRoom.JoinParticipant(User);
 
-			////MessagesList = chatRoom.GetChatMessageList();
-   //     }
+            //MessagesList = chatRoom.GetChatMessageList();
+        }
     }
 }

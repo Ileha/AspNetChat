@@ -4,6 +4,7 @@ using AspNetChat.Core.Interfaces;
 using AspNetChat.Core.Interfaces.Factories;
 using AspNetChat.Core.Interfaces.Services;
 using AspNetChat.Core.Services;
+using AspNetChat.Core.Services.System;
 using AspNetChat.Extensions;
 
 namespace AspNetChat
@@ -15,11 +16,17 @@ namespace AspNetChat
         {
 			var builder = WebApplication.CreateBuilder(args);
 
-            builder.Services.AddSingleton<IChatContainer, ChatDataModel>();
-            builder.Services.AddSingleton<IFactory<ChatFactory.ChatParams, IChat>, ChatFactory>();
-            builder.Services.AddSingleton<IFactory<ParticipantFactory.ParticipantParams, IChatPartisipant>, ParticipantFactory>();
-			builder.Services.BindSingletonInterfacesTo<MessageListPublisherService>();
 			builder.Services.AddSingleton<DisposeService>();
+			builder.Services.AddSingleton<InitializeService>();
+
+			builder.Services.AddSingleton<IChatContainer, ChatDataModel>();
+			builder.Services.AddFactoryFromMethod<ChatFactory.ChatParams, IChat>(
+				(serviceProvider, arg1) =>
+				{
+					return new ChatModel(arg1.Guid, serviceProvider.GetService<IMessageConsumerService>()!);
+				});
+			builder.Services.AddSingleton<IFactory<ParticipantFactory.ParticipantParams, IChatPartisipant>, ParticipantFactory>();
+			builder.Services.BindSingletonInterfacesTo<MessageListPublisherService>();
 			builder.Services.AddSingleton<ChatUserHelper>();
 			builder.Services.BindSingletonInterfacesTo<DisconnectionService>();
 			builder.Services.BindSingletonInterfacesTo<MessageReceiverService>();
@@ -123,6 +130,8 @@ namespace AspNetChat
 			app.UseAuthorization();
 
 			app.MapRazorPages();
+
+			app.Services.GetService<InitializeService>()?.Initialize();
 
 			app.Run();
 

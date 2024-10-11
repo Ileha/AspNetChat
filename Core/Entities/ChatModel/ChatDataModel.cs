@@ -1,6 +1,8 @@
 ﻿using AspNetChat.Core.Factories;
 using AspNetChat.Core.Interfaces;
 using AspNetChat.Core.Interfaces.Factories;
+using System;
+using System.Collections.Concurrent;
 using System.Security.Cryptography;
 using System.Text;
 using System.Xml.Linq;
@@ -10,7 +12,7 @@ namespace AspNetChat.Core.Entities.Model
 
     public class ChatDataModel : IChatContainer
     {
-        private readonly Dictionary<Guid, IChat> _chats = new();
+        private readonly ConcurrentDictionary<Guid, IChat> _chats = new();
         private readonly IFactory<ChatFactory.ChatParams, IChat> _chatFactory;
 
         public ChatDataModel(IFactory<ChatFactory.ChatParams, IChat> chatFactory)
@@ -20,12 +22,12 @@ namespace AspNetChat.Core.Entities.Model
 
         public IChat GetChatById(Guid chatId)
         {
-            if (!_chats.TryGetValue(chatId, out var chat))
-            {
-                chat = _chatFactory.Create(new ChatFactory.ChatParams(chatId));
-            }
+			_chats.AddOrUpdate(
+				chatId,
+				(chatId) => _chatFactory.Create(new ChatFactory.ChatParams(chatId)),
+				(chatId, item) => item);
 
-            return chat;
+			return _chats[chatId];
         }
 
         public IChat GetChatByName(string name)
