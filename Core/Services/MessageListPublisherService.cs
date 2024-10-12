@@ -15,6 +15,8 @@ namespace AspNetChat.Core.Services
 	{
 		private readonly IChatContainer _chatContainer;
 		private readonly ChatUserHelper _chatUserHelper;
+		private readonly ChatEventComposer _chatEventComposer;
+		private readonly ILogger<MessageListPublisherService> _logger;
 
 		/// <summary>
 		/// key is chat
@@ -26,10 +28,14 @@ namespace AspNetChat.Core.Services
 
 		public MessageListPublisherService(
 			IChatContainer chatContainer, 
-			ChatUserHelper chatUserHelper)
+			ChatUserHelper chatUserHelper,
+			ChatEventComposer chatEventComposer,
+			ILogger<MessageListPublisherService> logger)
 		{
 			_chatContainer = chatContainer ?? throw new ArgumentNullException(nameof(chatContainer));
 			_chatUserHelper = chatUserHelper ?? throw new ArgumentNullException(nameof(chatUserHelper));
+			_chatEventComposer = chatEventComposer ?? throw new ArgumentNullException(nameof(chatEventComposer));
+			_logger = logger ?? throw new ArgumentNullException(nameof(logger));
 			_cancellationToken = _cancellationTokenSource.Token;
 		}
 
@@ -38,13 +44,20 @@ namespace AspNetChat.Core.Services
 			if (!_allChatsData.TryGetValue(chat, out var chatData))
 				return;
 
-			var eventsList = GetUserEventDataObject(events).ToArray();
+			try
+			{
+				var eventsList = _chatEventComposer.GetEvents(events).ToArray();
 
-			var data = JsonConvert.SerializeObject(eventsList);
+				var data = JsonConvert.SerializeObject(eventsList);
 
-			await Task.WhenAll(
-				chatData.Connections.Values.Select(item => item.WebSocket.SendMessageAsync(data, _cancellationToken))
-			);
+				await Task.WhenAll(
+					chatData.Connections.Values.Select(item => item.WebSocket.SendMessageAsync(data, _cancellationToken))
+				);
+			}
+			catch (Exception error)
+			{
+				_logger.LogError(error.ToString());
+			}
 		}
 
 		public async Task ConectWebSocket(string userID, string chatID, HttpContext context)
@@ -69,7 +82,7 @@ namespace AspNetChat.Core.Services
 			}
 
 			var webSocket = await context.WebSockets.AcceptWebSocketAsync();
-
+			
 			var chatData = _allChatsData.AddOrUpdate(
 				chat,
 				(chatId) =>
@@ -100,38 +113,29 @@ namespace AspNetChat.Core.Services
 			_cancellationTokenSource.Dispose();
 		}
 
-		private IEnumerable<BaseUserEvent> GetUserEventDataObject(IReadOnlyList<IEvent> events) 
+		private Task HandleUserWebSocket(UserConnection connection, CancellationToken token)
 		{
-			var visiter = new MessageCollector();
-
-			foreach (var @event in events)
-			{
-				visiter.Clear();
-
-				@event.Accept(visiter);
-
-				yield return visiter.UserEvent!;
-			}
-		}
-
-		private async Task HandleUserWebSocket(UserConnection connection, CancellationToken token)
-		{
-			while (!token.IsCancellationRequested)
-			{
-				try
+			return Task.Run(
+				async () => 
 				{
-					var message = await connection.WebSocket.WaitMessageAsync(token);
-				}
-				catch (OperationCanceledException) 
-				{
-					if (!_allChatsData.TryGetValue(connection.Chat, out var chatData))
-						return;
+					while (!token.IsCancellationRequested)
+					{
+						try
+						{
+							var message = await connection.WebSocket.WaitMessageAsync(token);
+						}
+						catch (OperationCanceledException)
+						{
+							if (!_allChatsData.TryGetValue(connection.Chat, out var chatData))
+								return;
 
-					chatData.Connections.TryRemove(connection.User, out _);
+							chatData.Connections.TryRemove(connection.User, out _);
 
-					return;
-				}
-			}
+							return;
+						}
+					}
+				}, 
+				token);
 		}
 
 		private class UserConnection : IDisposable
@@ -167,64 +171,5 @@ namespace AspNetChat.Core.Services
 		}
 
 		private record ChatData(ConcurrentDictionary<IIdentifiable, UserConnection> Connections);
-
-		public enum UserEventType
-		{
-			Joined = 0,
-			Message = 1,
-			Disconnected = 2,
-		}
-
-		public class MessageCollector : IEventVisitor
-		{
-			public BaseUserEvent? UserEvent { get; private set; }
-
-			public void Visit(IUserConnected userConnected)
-			{
-				UserEvent = new UserJoined(userConnected.UserName, userConnected.DateTime, userConnected.User.Id);
-			}
-
-			public void Visit(IUserSendMessage userSendMessage)
-			{
-				UserEvent = new UserSendMessage(userSendMessage.Message, userSendMessage.DateTime, userSendMessage.User.Id);
-			}
-
-			public void Visit(IUserDisconnected userDisconnected)
-			{
-				UserEvent = new UserDisconnected(userDisconnected.DateTime, userDisconnected.User.Id);
-			}
-
-			public void Clear() 
-			{
-				UserEvent = null;
-			}
-		}
-
-		public record BaseUserEvent(
-			[JsonProperty("time")]
-			DateTime Time,
-			[JsonProperty("eventType")]
-			UserEventType EventType,
-			[JsonProperty("userID")]
-			Guid UserId);
-
-		public record UserJoined(
-			[JsonProperty("userName")]
-			string Name,
-			DateTime Time,
-			Guid UserId) 
-			: BaseUserEvent(Time, UserEventType.Joined, UserId);
-
-		public record UserSendMessage(
-			[JsonProperty("message")]
-			string Message,
-			DateTime Time,
-			Guid UserId) 
-			: BaseUserEvent(Time, UserEventType.Message, UserId);
-
-		public record UserDisconnected(
-			DateTime Time,
-			Guid UserId) 
-			: BaseUserEvent(Time, UserEventType.Disconnected, UserId);
 	}
 }

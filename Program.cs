@@ -29,6 +29,7 @@ namespace AspNetChat
 			builder.Services.AddSingleton<ChatUserHelper>();
 			builder.Services.BindSingletonInterfacesTo<DisconnectionService>();
 			builder.Services.BindSingletonInterfacesTo<MessageReceiverService>();
+			builder.Services.AddSingleton<ChatEventComposer>();
 
 			// Add services to the container.
 			builder.Services.AddRazorPages();

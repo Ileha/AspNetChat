@@ -13,7 +13,7 @@
 	<script>
 		window.onbeforeunload = function()
 		{
-			let disconnectURL = new URL("/UserDisconnected/@(Model.Chat!.Id)");
+			let disconnectURL = new URL(`${window.location.origin}/UserDisconnected/@(Model.Chat!.Id)`);
 
 			disconnectURL.searchParams.append("userID", "@(Model.ChatUser!.Id)");
 
@@ -28,7 +28,7 @@
 		{
 			let message = document.getElementById("chat-input").value;
 
-			let sendURL = new URL("/UserSendMessage/@(Model.Chat!.Id)");
+			let sendURL = new URL(`${window.location.origin}/UserSendMessage/@(Model.Chat!.Id)`);
 
 			sendURL.searchParams.append("userID", "@(Model.ChatUser!.Id)");
 			sendURL.searchParams.append("message", message);
@@ -42,10 +42,55 @@
 			document.getElementById("chat-input").value = "";
 		}
 
-		// function composeMessages(data)
-		// {
-		// 	let chatContainer = document.getElementById("chat-history");
-		// }
+		function composeMessages(data)
+		{
+			let chatContainer = document.getElementById("chat-history");
+
+			const para = document.createElement("p");
+			const node = document.createTextNode("This is new.");
+			para.appendChild(node);
+		}
+
+		const wsUrl = new URL(`${window.location.origin}/ChatHandler/@(Model.Chat!.Id)`);
+		wsUrl.searchParams.append("userID", "@(Model.ChatUser!.Id)");
+		wsUrl.protocol = "wss";
+
+		console.log(wsUrl.href);
+
+		const socket = new WebSocket(wsUrl.href);
+
+		socket.onmessage = function(event) 
+		{
+			console.log(`[message] Данные получены с сервера: ${event.data}`);
+			return false;
+		};
+
+		socket.onopen = function(e) 
+		{
+			console.log(`[open] Соединение установлено ${e}`);
+		};
+
+		socket.onclose = function(event) 
+		{
+			console.log(`${event}`);
+
+			if (event.wasClean) 
+			{
+				console.log(`[close] Соединение закрыто чисто, код=${event.code} причина=${event.reason}`);
+			}
+			else 
+			{
+				// например, сервер убил процесс или сеть недоступна
+				// обычно в этом случае event.code 1006
+				console.log('[close] Соединение прервано');
+			}
+		};
+
+		socket.onerror = function(error) {
+		  console.log(`${error}`);
+		};
+
+		// function o
 
 		// let jsonData = "@(Newtonsoft.Json.JsonConvert.SerializeObject(Model.MessagesList))"
 
