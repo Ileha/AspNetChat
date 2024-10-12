@@ -55,7 +55,7 @@ namespace AspNetChat
 			app.Map("/ChatHandler/{chatID}", 
 				async (string chatID, string userID, HttpContext context, IMessageListPublisherService messageListPublisherService) => 
 				{
-					await messageListPublisherService.ConectWebSocket(userID, chatID, context);
+					await messageListPublisherService.ConnectWebSocket(userID, chatID, context);
 				});
 
 			app.MapPost("/UserDisconnected/{chatID}",

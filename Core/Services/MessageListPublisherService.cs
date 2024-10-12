@@ -60,7 +60,7 @@ namespace AspNetChat.Core.Services
 			}
 		}
 
-		public async Task ConectWebSocket(string userID, string chatID, HttpContext context)
+		public async Task ConnectWebSocket(string userID, string chatID, HttpContext context)
 		{
 			var message = string.Empty;
 			var statusCode = HttpStatusCode.InternalServerError;
