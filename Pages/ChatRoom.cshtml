@@ -46,9 +46,10 @@
 		{
 			let chatContainer = document.getElementById("chat-history");
 
+			
+
 			const para = document.createElement("p");
-			const node = document.createTextNode("This is new.");
-			para.appendChild(node);
+			para.appendChild(document.createTextNode("This is new."));
 		}
 
 		const wsUrl = new URL(`${window.location.origin}/ChatHandler/@(Model.Chat!.Id)`);
@@ -59,42 +60,24 @@
 
 		const socket = new WebSocket(wsUrl.href);
 
-		socket.onmessage = function(event) 
-		{
+		socket.onmessage = function (event) {
 			console.log(`[message] Данные получены с сервера: ${event.data}`);
 			return false;
 		};
 
-		socket.onopen = function(e) 
-		{
-			console.log(`[open] Соединение установлено ${e}`);
-		};
-
-		socket.onclose = function(event) 
-		{
-			console.log(`${event}`);
-
-			if (event.wasClean) 
-			{
-				console.log(`[close] Соединение закрыто чисто, код=${event.code} причина=${event.reason}`);
+		socket.onclose = function (event) {
+			if (event.wasClean) {
+				console.log(`[close] Connection closed, code=${event.code} reason=${event.reason}`);
 			}
-			else 
-			{
-				// например, сервер убил процесс или сеть недоступна
-				// обычно в этом случае event.code 1006
-				console.log('[close] Соединение прервано');
+			else {
+				console.log('[close] Connection interrupted');
 			}
 		};
 
-		socket.onerror = function(error) {
-		  console.log(`${error}`);
+		socket.onerror = function (error) {
+			console.log(`${error}`);
 		};
 
-		// function o
-
-		// let jsonData = "@(Newtonsoft.Json.JsonConvert.SerializeObject(Model.MessagesList))"
-
-		// composeMessages(JSON.parse(jsonData));
 	</script>
 </head>
 

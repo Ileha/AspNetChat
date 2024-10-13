@@ -1,9 +1,9 @@
 using AspNetChat.Core.Factories;
 using AspNetChat.Core.Interfaces;
 using AspNetChat.Core.Interfaces.Factories;
-using AspNetChat.Core.Interfaces.Services;
+using AspNetChat.Core.Services;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using static AspNetChat.Core.Interfaces.Services.ChatEventComposer;
+using static AspNetChat.Core.Services.ChatEventComposer;
 
 namespace AspNetChat.Pages
 {

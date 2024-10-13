@@ -11,7 +11,7 @@ using System.Net.WebSockets;
 
 namespace AspNetChat.Core.Services
 {
-	public class MessageListPublisherService : IMessageListPublisherService, IMessageConsumerService, IDisposable
+    public class MessageListPublisherService : IMessageListPublisherService, IMessageConsumerService, IDisposable
 	{
 		private readonly IChatContainer _chatContainer;
 		private readonly ChatUserHelper _chatUserHelper;
@@ -81,7 +81,12 @@ namespace AspNetChat.Core.Services
 				return;
 			}
 
-			var webSocket = await context.WebSockets.AcceptWebSocketAsync();
+			var wsContext = new WebSocketAcceptContext()
+			{
+				KeepAliveInterval = TimeSpan.FromMinutes(1),
+				//DangerousEnableCompression = true,
+			};
+			var webSocket = await context.WebSockets.AcceptWebSocketAsync(wsContext);
 			
 			var chatData = _allChatsData.AddOrUpdate(
 				chat,
@@ -104,7 +109,7 @@ namespace AspNetChat.Core.Services
 				}
 			);
 
-			HandleUserWebSocket(actualUserConnection, userConnection.CancellationToken);
+			await HandleUserWebSocket(actualUserConnection, userConnection.CancellationToken);
 		}
 
 		public void Dispose()
@@ -113,29 +118,24 @@ namespace AspNetChat.Core.Services
 			_cancellationTokenSource.Dispose();
 		}
 
-		private Task HandleUserWebSocket(UserConnection connection, CancellationToken token)
+		private async Task HandleUserWebSocket(UserConnection connection, CancellationToken token)
 		{
-			return Task.Run(
-				async () => 
+			while (!token.IsCancellationRequested)
+			{
+				try
 				{
-					while (!token.IsCancellationRequested)
-					{
-						try
-						{
-							var message = await connection.WebSocket.WaitMessageAsync(token);
-						}
-						catch (OperationCanceledException)
-						{
-							if (!_allChatsData.TryGetValue(connection.Chat, out var chatData))
-								return;
+					var message = await connection.WebSocket.WaitMessageAsync(token);
+				}
+				catch (OperationCanceledException)
+				{
+					if (!_allChatsData.TryGetValue(connection.Chat, out var chatData))
+						return;
 
-							chatData.Connections.TryRemove(connection.User, out _);
+					chatData.Connections.TryRemove(connection.User, out _);
 
-							return;
-						}
-					}
-				}, 
-				token);
+					return;
+				}
+			}
 		}
 
 		private class UserConnection : IDisposable
