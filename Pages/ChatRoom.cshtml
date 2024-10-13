@@ -42,14 +42,81 @@
 			document.getElementById("chat-input").value = "";
 		}
 
+		function clearDom(html) {
+
+			while (html.firstChild) {
+				html.removeChild(html.firstChild);
+			}
+		}
+
 		function composeMessages(data)
 		{
 			let chatContainer = document.getElementById("chat-history");
 
-			
+			clearDom(chatContainer);
 
-			const para = document.createElement("p");
-			para.appendChild(document.createTextNode("This is new."));
+			var users = {};
+
+			data.forEach((item) => {
+
+				const isCurrentUser = item.userID === "@(Model.ChatUser!.Id)";
+
+				switch (item.eventType) {
+					case 0: {
+					
+						let user = { name: item.userName };
+						users[item.userID] = user;
+
+						let para = document.createElement("p");
+
+						if (isCurrentUser) {
+							para.appendChild(document.createTextNode(`you joined as ${user.name}`));
+						}
+						else {
+							para.appendChild(document.createTextNode(`user joined: ${user.name}`));
+						}
+
+						chatContainer.appendChild(para);
+
+					} break;
+					case 1: {
+					
+						let user = users[item.userID];
+
+						let para = document.createElement("p");
+
+						if (isCurrentUser) {
+							para.appendChild(document.createTextNode(`${item.message}`));
+							para.classList.add('user');
+						}
+						else {
+							para.appendChild(document.createTextNode(`${user.name}: ${item.message}`));
+						}
+
+						chatContainer.appendChild(para);
+					
+					} break;
+					case 2: {
+					
+						let user = users[item.userID];
+						delete users[item.userID];
+
+						let para = document.createElement("p");
+
+						if (isCurrentUser) {
+							para.appendChild(document.createTextNode(`you disconnected`));
+						}
+						else {
+							para.appendChild(document.createTextNode(`user disconnected: ${user.name}`));
+						}
+
+						chatContainer.appendChild(para);
+
+					} break;
+					default:
+						console.log("value out of range");
+				}
+			});
 		}
 
 		const wsUrl = new URL(`${window.location.origin}/ChatHandler/@(Model.Chat!.Id)`);
@@ -62,6 +129,9 @@
 
 		socket.onmessage = function (event) {
 			console.log(`[message] Данные получены с сервера: ${event.data}`);
+
+			composeMessages(JSON.parse(event.data));
+
 			return false;
 		};
 
@@ -84,8 +154,6 @@
 <body>
 	<div class="chat-container">
 		<div class="chat-history" id="chat-history">
-			@* <p>@(Model.MessagesList)</p>
-			<p class="user">You: Hello!</p> *@
 		</div>
 		<div class="chat-input-container">
 			<input type="text" id="chat-input" placeholder="Type your message here...">

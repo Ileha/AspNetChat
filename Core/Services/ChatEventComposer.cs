@@ -1,12 +1,10 @@
-﻿using AspNetChat.Core.Entities.ChatModel.Events;
-using AspNetChat.Core.Interfaces.ChatEvents;
+﻿using AspNetChat.Core.Interfaces.ChatEvents;
 using AspNetChat.Extensions.Converters;
 using Newtonsoft.Json;
-using static AspNetChat.Core.Services.ChatEventComposer;
 
 namespace AspNetChat.Core.Services
 {
-    public class ChatEventComposer
+	public class ChatEventComposer
     {
         public IEnumerable<BaseUserEvent> GetEvents(IReadOnlyList<IEvent> events)
         {
