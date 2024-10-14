@@ -56,7 +56,7 @@ namespace AspNetChat.Core.Services
 			}
 			catch (Exception error)
 			{
-				_logger.LogError(error.ToString());
+				_logger.LogError($"{nameof(ConsumeMessage)}: {error.ToString()}");
 			}
 		}
 
@@ -84,7 +84,6 @@ namespace AspNetChat.Core.Services
 			var wsContext = new WebSocketAcceptContext()
 			{
 				KeepAliveInterval = TimeSpan.FromMinutes(1),
-				//DangerousEnableCompression = true,
 			};
 			var webSocket = await context.WebSockets.AcceptWebSocketAsync(wsContext);
 			
@@ -93,7 +92,7 @@ namespace AspNetChat.Core.Services
 				(chatId) =>
 				{
 					return new ChatData(
-						new ConcurrentDictionary<IIdentifiable, UserConnection>()
+						new ConcurrentDictionary<IIdentifiable, UserConnection>(new IdentifiableEqualityComparer())
 					);
 				},
 				(chatId, item) => item);
@@ -128,10 +127,17 @@ namespace AspNetChat.Core.Services
 				}
 				catch (OperationCanceledException)
 				{
-					if (!_allChatsData.TryGetValue(connection.Chat, out var chatData))
+					if (!_allChatsData.TryGetValue(connection.Chat, out var chatData)) 
+					{
+						_logger.LogWarning($"{nameof(HandleUserWebSocket)}: unable to find chat for user {connection.User.Id}");
 						return;
+					}
 
-					chatData.Connections.TryRemove(connection.User, out _);
+					if (!chatData.Connections.TryRemove(connection.User, out _)) 
+					{
+						_logger.LogWarning($"{nameof(HandleUserWebSocket)}: unable to remove user {connection.User.Id} " +
+							$"from chat connection {connection.Chat}");
+					}
 
 					return;
 				}

@@ -87,7 +87,7 @@ namespace AspNetChat.Core.Services
 
             public void Visit(IUserDisconnected userDisconnected)
             {
-				UserEvent = new UserSendMessage()
+				UserEvent = new UserDisconnected()
 				{
 					Time = userDisconnected.DateTime,
 					EventType = UserEventType.Disconnected,

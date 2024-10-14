@@ -1,5 +1,5 @@
 ﻿@page
-@* @using Newtonsoft.Json *@
+@using Newtonsoft.Json
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 @model AspNetChat.Pages.ChatRoomModel
 @{
@@ -27,6 +27,12 @@
 		function sendMessage()
 		{
 			let message = document.getElementById("chat-input").value;
+
+			if (message === "") 
+			{
+				alert("Enter message first");
+				return;
+			}
 
 			let sendURL = new URL(`${window.location.origin}/UserSendMessage/@(Model.Chat!.Id)`);
 
@@ -128,8 +134,6 @@
 		const socket = new WebSocket(wsUrl.href);
 
 		socket.onmessage = function (event) {
-			console.log(`[message] Данные получены с сервера: ${event.data}`);
-
 			composeMessages(JSON.parse(event.data));
 
 			return false;
@@ -148,6 +152,10 @@
 			console.log(`${error}`);
 		};
 
+		window.onload = (event) => {
+			composeMessages(JSON.parse(`@(Html.Raw(JsonConvert.SerializeObject(Model.MessagesList)))`));
+		};
+
 	</script>
 </head>
 
@@ -155,9 +163,9 @@
 	<div class="chat-container">
 		<div class="chat-history" id="chat-history">
 		</div>
-		<div class="chat-input-container">
-			<input type="text" id="chat-input" placeholder="Type your message here...">
-			<button onclick="sendMessage()">Send</button>
-		</div>
+		<form onsubmit="sendMessage(); return false;" class="chat-input-container">
+			<input type="text" id="chat-input" autocomplete="off" placeholder="Type your message here...">
+			<button type="submit">Send</button>
+		</form>
 	</div>
 </body>
