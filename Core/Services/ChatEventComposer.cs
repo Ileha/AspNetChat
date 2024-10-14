@@ -1,4 +1,6 @@
-﻿using AspNetChat.Core.Interfaces.ChatEvents;
+﻿using AspNetChat.Core.Interfaces;
+using AspNetChat.Core.Interfaces.ChatEvents;
+using AspNetChat.Extensions.Comparers;
 using AspNetChat.Extensions.Converters;
 using Newtonsoft.Json;
 
@@ -61,16 +63,26 @@ namespace AspNetChat.Core.Services
 
 		private class MessageCollector : IEventVisitor
         {
+            private readonly Dictionary<string, int> _nameAmount = new Dictionary<string, int>();
+            private readonly Dictionary<IIdentifiable, UserData> _id2Name = 
+                new Dictionary<IIdentifiable, UserData>(new IdentifiableEqualityComparer());
+
             public BaseUserEvent? UserEvent { get; private set; }
 
             public void Visit(IUserConnected userConnected)
             {
-                UserEvent = new UserJoined()
+                AddUser(userConnected.User, userConnected.UserName);
+
+                if (!TryGetMappedName(userConnected.User, out var mappedName))
+                    throw new InvalidOperationException($"unable to find mapped name for user with if {userConnected.User.Id}");
+
+
+				UserEvent = new UserJoined()
                 {
                     Time = userConnected.DateTime,
                     EventType = UserEventType.Joined,
                     UserId = userConnected.User.Id,
-                    Name = userConnected.UserName,
+                    Name = mappedName,
                 };
             }
 
@@ -99,6 +111,53 @@ namespace AspNetChat.Core.Services
             {
                 UserEvent = null;
             }
+
+            private bool TryGetMappedName(IIdentifiable user, out string name) 
+            {
+                name = string.Empty;
+
+                if (!_id2Name.TryGetValue(user, out var userData))
+                    return false;
+
+                name = userData.MappedName;
+
+                return true;
+            }
+
+            private void AddUser(IIdentifiable user, string name) 
+            {
+                if (_id2Name.ContainsKey(user))
+                    throw new InvalidOperationException($"name {name} already assigned for user with id {user.Id}");
+
+                var userAmount = GetNameAmount(name);
+
+                _id2Name[user] = new UserData(name, userAmount > 0 ? $"{name} ({userAmount})" : name);
+                AddNameAmount(name, 1);
+            }
+
+            private void AddNameAmount(string name, int amount) 
+            {
+                if (!_nameAmount.TryGetValue(name, out var currentAmount)) 
+                {
+                    currentAmount = 0;
+				}
+
+                currentAmount += amount;
+
+                _nameAmount[name] = currentAmount;
+            }
+
+            private int GetNameAmount(string name) 
+            {
+				if (!_nameAmount.TryGetValue(name, out var currentAmount))
+				{
+					return 0;
+				}
+
+				return currentAmount;
+			}
+
+            private record UserData(string OriginalName, string MappedName);
         }
     }
 }
