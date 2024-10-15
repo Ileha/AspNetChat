@@ -14,11 +14,14 @@ namespace AspNetChat.Core.Entities.ChatModel.Events
 
 		public string UserName => _name;
 
+		public Guid Id { get; }
+
 		public UserConnected(string name, Guid guid, DateTime dateTime)
         {
             _name = name ?? throw new ArgumentNullException(nameof(name));
             _guid = guid;
             DateTime = dateTime;
+            Id = Guid.NewGuid();
         }
 
         public void Accept(IEventVisitor eventVisitor)

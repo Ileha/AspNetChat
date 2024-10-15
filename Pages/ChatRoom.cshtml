@@ -13,9 +13,9 @@
 	<script>
 		window.onbeforeunload = function()
 		{
-			let disconnectURL = new URL(`${window.location.origin}/UserDisconnected/@(Model.Chat!.Id)`);
+			let disconnectURL = new URL(`${window.location.origin}/UserDisconnected/@(Model.Chat!.Id.ToString("N"))`);
 
-			disconnectURL.searchParams.append("userID", "@(Model.ChatUser!.Id)");
+			disconnectURL.searchParams.append("userID", "@(Model.ChatUser!.Id.ToString("N"))");
 
 			fetch(disconnectURL.href,
 			{
@@ -34,9 +34,9 @@
 				return;
 			}
 
-			let sendURL = new URL(`${window.location.origin}/UserSendMessage/@(Model.Chat!.Id)`);
+			let sendURL = new URL(`${window.location.origin}/UserSendMessage/@(Model.Chat!.Id.ToString("N"))`);
 
-			sendURL.searchParams.append("userID", "@(Model.ChatUser!.Id)");
+			sendURL.searchParams.append("userID", "@(Model.ChatUser!.Id.ToString("N"))");
 			sendURL.searchParams.append("message", message);
 
 			fetch(sendURL.href,
@@ -65,7 +65,7 @@
 
 			data.forEach((item) => {
 
-				const isCurrentUser = item.userID === "@(Model.ChatUser!.Id)";
+				const isCurrentUser = item.userID === "@(Model.ChatUser!.Id.ToString("N"))";
 
 				switch (item.eventType) {
 					case 0: {
@@ -125,8 +125,8 @@
 			});
 		}
 
-		const wsUrl = new URL(`${window.location.origin}/ChatHandler/@(Model.Chat!.Id)`);
-		wsUrl.searchParams.append("userID", "@(Model.ChatUser!.Id)");
+		const wsUrl = new URL(`${window.location.origin}/ChatHandler/@(Model.Chat!.Id.ToString("N"))`);
+		wsUrl.searchParams.append("userID", "@(Model.ChatUser!.Id.ToString("N"))");
 		wsUrl.protocol = "wss";
 
 		console.log(wsUrl.href);

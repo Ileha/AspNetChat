@@ -1,8 +1,10 @@
-﻿using AspNetChat.Core.Interfaces;
+﻿using AspNetChat.Core.Entities.ChatModel.Events;
+using AspNetChat.Core.Interfaces;
 using AspNetChat.Core.Interfaces.ChatEvents;
 using AspNetChat.Extensions.Comparers;
 using AspNetChat.Extensions.Converters;
 using Newtonsoft.Json;
+using static AspNetChat.Core.Services.ChatEventComposer;
 
 namespace AspNetChat.Core.Services
 {
@@ -39,8 +41,12 @@ namespace AspNetChat.Core.Services
 			public UserEventType EventType { get; set; }
 
 			[JsonProperty("userID")]
+            [JsonConverter(typeof(GuidConverter))]
 			public Guid UserId { get; set; }
 
+            [JsonProperty("eventID")]
+			[JsonConverter(typeof(GuidConverter))]
+			public Guid EventId { get; set; }
 		}
 
         public class UserJoined : BaseUserEvent
@@ -83,6 +89,7 @@ namespace AspNetChat.Core.Services
                     EventType = UserEventType.Joined,
                     UserId = userConnected.User.Id,
                     Name = mappedName,
+                    EventId = userConnected.Id,
                 };
             }
 
@@ -94,6 +101,7 @@ namespace AspNetChat.Core.Services
 					EventType = UserEventType.Message,
 					UserId = userSendMessage.User.Id,
 					Message = userSendMessage.Message,
+					EventId = userSendMessage.Id,
 				};
 			}
 
@@ -104,6 +112,7 @@ namespace AspNetChat.Core.Services
 					Time = userDisconnected.DateTime,
 					EventType = UserEventType.Disconnected,
 					UserId = userDisconnected.User.Id,
+					EventId = userDisconnected.Id,
 				};
 			}
 

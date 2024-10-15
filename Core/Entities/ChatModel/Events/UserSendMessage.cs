@@ -14,12 +14,15 @@ namespace AspNetChat.Core.Entities.ChatModel.Events
 
 		public string Message => _message;
 
+		public Guid Id { get; }
+
 		public UserSendMessage(Guid guid, string message, DateTime dateTime)
         {
             _guid = guid;
             _message = message ?? throw new ArgumentNullException(nameof(message));
             DateTime = dateTime;
-        }
+			Id = Guid.NewGuid();
+		}
 
         void IEvent.Accept(IEventVisitor eventVisitor)
         {

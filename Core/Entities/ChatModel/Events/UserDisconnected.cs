@@ -11,11 +11,14 @@ namespace AspNetChat.Core.Entities.ChatModel.Events
 
 		public IIdentifiable User => (Identifiable) _guid;
 
+		public Guid Id { get; }
+
 		public UserDisconnected(Guid guid, DateTime dateTime)
         {
             _guid = guid;
             DateTime = dateTime;
-        }
+			Id = Guid.NewGuid();
+		}
 
         void IEvent.Accept(IEventVisitor eventVisitor)
         {
