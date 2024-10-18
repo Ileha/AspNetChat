@@ -1,6 +1,9 @@
 ﻿services:
   web:
     build: .
+    volumes:
+      - ./bin/Debug/net8.0:/app/
+      - ./wwwroot:/app/wwwroot/
     ports:
       - "8080:8080"
       - "8081:8081"

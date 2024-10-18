@@ -6,6 +6,7 @@ using AspNetChat.Core.Interfaces.Services;
 using AspNetChat.Core.Services;
 using AspNetChat.Core.Services.System;
 using AspNetChat.Extensions;
+using System.Net;
 
 namespace AspNetChat
 {
@@ -34,6 +35,15 @@ namespace AspNetChat
 			// Add services to the container.
 			builder.Services.AddRazorPages();
 
+			builder.WebHost.UseKestrel(options =>
+			{
+				options.Listen(IPAddress.Any, 8080);
+				options.Listen(IPAddress.Any, 8081, listenOptions => 
+				{
+					listenOptions.UseHttps("./DevCertificate.pfx", "");
+				});
+			});
+
 			var app = builder.Build();
 
 			// Configure the HTTP request pipeline.
@@ -44,7 +54,7 @@ namespace AspNetChat
 				app.UseHsts();
 			}
 
-            app.UseWebSockets();
+			app.UseWebSockets();
 			app.Map("/ws", (IApplicationBuilder app) => 
 			{
 				app.UseMiddleware<WebSocketEndpoint>();
@@ -133,9 +143,11 @@ namespace AspNetChat
 
 			app.Services.GetService<InitializeService>()?.Initialize();
 
+			var disposeService = app.Services.GetService<DisposeService>();
+
 			app.Run();
 
-			app.Services.GetService<DisposeService>()?.Dispose();
+			disposeService?.Dispose();
 		}
 	}
 }
