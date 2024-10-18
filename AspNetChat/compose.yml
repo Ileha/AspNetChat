@@ -4,6 +4,7 @@
     volumes:
       - ./bin/Debug/net8.0:/app/
       - ./wwwroot:/app/wwwroot/
+      - ${APPDATA}/Microsoft/UserSecrets/df882b04-e4b6-471b-8a14-25b1d19741c0:/app/usersecrets:ro
     ports:
       - "8080:8080"
       - "8081:8081"

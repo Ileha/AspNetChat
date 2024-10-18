@@ -1,3 +1,4 @@
+using AspNetChat.Core.Entities;
 using AspNetChat.Core.Entities.Model;
 using AspNetChat.Core.Factories;
 using AspNetChat.Core.Interfaces;
@@ -6,15 +7,58 @@ using AspNetChat.Core.Interfaces.Services;
 using AspNetChat.Core.Services;
 using AspNetChat.Core.Services.System;
 using AspNetChat.Extensions;
+using CommandLine;
 using System.Net;
+using System.Text;
 
 namespace AspNetChat
 {
-    public class Program
+	public class Program
     {
-        public static void Main(string[] args)
-        {
+		public static void Main(string[] args)
+		{
+			Parser.Default.ParseArguments<Options>(args)
+				.WithParsed(options => CreateAspNetApp(args, options));
+		}
+
+		private static void ConfigureHttpsCertificates(WebApplicationBuilder builder, Options options) 
+		{
+			if (!options.CustomHttpsCertificate)
+				return;
+
+			var httpsSettings = builder.Configuration.GetSection("Https").Get<HttpsCertificateSettings>();
+
+			if (httpsSettings == null)
+				throw new InvalidOperationException("unable to get https certificate configuration");
+
+			builder.WebHost.UseKestrel(options =>
+			{
+				options.Listen(IPAddress.Any, 8080);
+				options.Listen(IPAddress.Any, 8081, listenOptions =>
+				{
+					listenOptions.UseHttps(httpsSettings.GetCertificate());
+				});
+			});
+		}
+
+		private static void LoadJsons(WebApplicationBuilder builder, Options options) 
+		{
+			var sb = new StringBuilder();
+
+			foreach (var item in options.Jsons)
+			{
+				builder.Configuration.AddJsonFile(item, false, true);
+				sb.AppendLine(item);
+			}
+
+			Console.WriteLine($"loaded jsons:\n{sb.ToString()}");
+		}
+
+		private static void CreateAspNetApp(string[] args, Options options) 
+		{
 			var builder = WebApplication.CreateBuilder(args);
+
+			LoadJsons(builder, options);
 
 			builder.Services.AddSingleton<DisposeService>();
 			builder.Services.AddSingleton<InitializeService>();
@@ -35,14 +79,7 @@ namespace AspNetChat
 			// Add services to the container.
 			builder.Services.AddRazorPages();
 
-			builder.WebHost.UseKestrel(options =>
-			{
-				options.Listen(IPAddress.Any, 8080);
-				options.Listen(IPAddress.Any, 8081, listenOptions => 
-				{
-					listenOptions.UseHttps("./DevCertificate.pfx", "");
-				});
-			});
+			ConfigureHttpsCertificates(builder, options);
 
 			var app = builder.Build();
 
@@ -55,15 +92,15 @@ namespace AspNetChat
 			}
 
 			app.UseWebSockets();
-			app.Map("/ws", (IApplicationBuilder app) => 
+			app.Map("/ws", (IApplicationBuilder app) =>
 			{
 				app.UseMiddleware<WebSocketEndpoint>();
 
 				//app.Map("/ChatHandler", (IApplicationBuilder app) => app.UseMiddleware<MessageListPublisherService>());
 			});
 
-			app.Map("/ChatHandler/{chatID}", 
-				async (string chatID, string userID, HttpContext context, IMessageListPublisherService messageListPublisherService) => 
+			app.Map("/ChatHandler/{chatID}",
+				async (string chatID, string userID, HttpContext context, IMessageListPublisherService messageListPublisherService) =>
 				{
 					await messageListPublisherService.ConnectWebSocket(userID, chatID, context);
 				});
@@ -76,10 +113,10 @@ namespace AspNetChat
 
 			app.MapPost("/UserSendMessage/{chatID}",
 				async (
-					string chatID, 
-					string userID, 
-					string message, 
-					HttpContext context, 
+					string chatID,
+					string userID,
+					string message,
+					HttpContext context,
 					IMessageReceiverService messageReceiverService) =>
 				{
 					await messageReceiverService.ReceiveMessage(userID, chatID, message, context);
