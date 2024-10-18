@@ -4,7 +4,7 @@ EXPOSE 8080
 EXPOSE 8081
 WORKDIR /app
 RUN cat $USER_SECRETS_ID
-ENTRYPOINT ["dotnet", "AspNetChat.dll", "--customHttps", "-j", "usersecrets/secrets.json"]
+ENTRYPOINT ["dotnet", "AspNetChat.dll", "--customHttps", "-j", "/root/usersecrets/secrets.json"]
 
 
 ## See https://aka.ms/customizecontainer to learn how to customize your debug container and how Visual Studio uses this Dockerfile to build your images for faster debugging.

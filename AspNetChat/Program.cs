@@ -8,6 +8,7 @@ using AspNetChat.Core.Services;
 using AspNetChat.Core.Services.System;
 using AspNetChat.Extensions;
 using CommandLine;
+using Microsoft.Extensions.FileProviders;
 using System.Net;
 using System.Text;
 
@@ -47,7 +48,12 @@ namespace AspNetChat
 
 			foreach (var item in options.Jsons)
 			{
-				builder.Configuration.AddJsonFile(item, false, true);
+				var fullPath = Path.GetFullPath(item);
+
+				var provider = new PhysicalFileProvider(Path.GetDirectoryName(fullPath)!);
+
+				builder.Configuration.AddJsonFile(provider, Path.GetFileName(fullPath), false, true);
+
 				sb.AppendLine(item);
 			}
 
