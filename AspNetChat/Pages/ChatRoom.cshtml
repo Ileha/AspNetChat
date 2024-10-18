@@ -11,6 +11,14 @@
 	<link rel="stylesheet" type="text/css" href="ChatRoom.css">
 	<title>Chat Interface</title>
 	<script>
+		const wsUrl = new URL(`${window.location.origin}/ChatHandler/@(Model.Chat!.Id.ToString("N"))`);
+		wsUrl.searchParams.append("userID", "@(Model.ChatUser!.Id.ToString("N"))");
+		wsUrl.protocol = "wss";
+
+		console.log(wsUrl.href);
+
+		const socket = new WebSocket(wsUrl.href);
+
 		window.onbeforeunload = function()
 		{
 			let disconnectURL = new URL(`${window.location.origin}/UserDisconnected/@(Model.Chat!.Id.ToString("N"))`);
@@ -22,6 +30,8 @@
 			  method: "POST",
 			  headers: {'Content-Type': 'application/json'}
 			})
+
+			socket.close(1000, "end of work");
 		}
 
 		function sendMessage()
@@ -124,14 +134,6 @@
 				}
 			});
 		}
-
-		const wsUrl = new URL(`${window.location.origin}/ChatHandler/@(Model.Chat!.Id.ToString("N"))`);
-		wsUrl.searchParams.append("userID", "@(Model.ChatUser!.Id.ToString("N"))");
-		wsUrl.protocol = "wss";
-
-		console.log(wsUrl.href);
-
-		const socket = new WebSocket(wsUrl.href);
 
 		socket.onmessage = function (event) {
 			composeMessages(JSON.parse(event.data));
