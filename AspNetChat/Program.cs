@@ -8,6 +8,7 @@ using AspNetChat.Core.Services;
 using AspNetChat.Core.Services.System;
 using AspNetChat.Extensions;
 using CommandLine;
+using Microsoft.AspNetCore.StaticFiles.Infrastructure;
 using Microsoft.Extensions.FileProviders;
 using System.Net;
 using System.Text;
@@ -44,6 +45,9 @@ namespace AspNetChat
 
 		private static void LoadJsons(WebApplicationBuilder builder, Options options) 
 		{
+			if (options.Jsons == null)
+				return;
+
 			var sb = new StringBuilder();
 
 			foreach (var item in options.Jsons)
@@ -58,6 +62,26 @@ namespace AspNetChat
 			}
 
 			Console.WriteLine($"loaded jsons:\n{sb.ToString()}");
+		}
+
+		private static void SetStaticFilesLocation(WebApplication app, Options options) 
+		{
+			if (string.IsNullOrWhiteSpace(options.StaticFilesLocation))
+			{
+				app.UseStaticFiles();
+			}
+			else 
+			{
+				if (!Directory.Exists(options.StaticFilesLocation))
+					throw new InvalidOperationException($"directory with static files is not exists: {options.StaticFilesLocation}");
+
+				app.UseStaticFiles(
+					new StaticFileOptions(
+						new SharedOptions() 
+						{ 
+							FileProvider = new PhysicalFileProvider(options.StaticFilesLocation)
+						}));
+			}
 		}
 
 		private static void CreateAspNetApp(string[] args, Options options) 
@@ -176,7 +200,7 @@ namespace AspNetChat
 
 
 			app.UseHttpsRedirection();
-			app.UseStaticFiles();
+			SetStaticFilesLocation(app, options);
 
 			app.UseRouting();
 
