@@ -122,12 +122,6 @@ namespace AspNetChat
 			}
 
 			app.UseWebSockets();
-			app.Map("/ws", (IApplicationBuilder app) =>
-			{
-				app.UseMiddleware<WebSocketEndpoint>();
-
-				//app.Map("/ChatHandler", (IApplicationBuilder app) => app.UseMiddleware<MessageListPublisherService>());
-			});
 
 			app.Map("/ChatHandler/{chatID}",
 				async (string chatID, string userID, HttpContext context, IMessageListPublisherService messageListPublisherService) =>
