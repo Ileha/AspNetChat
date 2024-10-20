@@ -4,6 +4,12 @@ namespace AspNetChat.Extensions
 {
 	public static class DIExtensions
 	{
+		public static T ResolveWith<T>(this IServiceProvider provider, params object[] parameters)
+			where T : class
+		{
+			return ActivatorUtilities.CreateInstance<T>(provider, parameters);
+		}
+
 		public static void AddFactoryFromResolve<T>(this IServiceCollection services) 
 		{
 			services.AddSingleton<IFactory<T>, ResolveFactory<T>>(x => new ResolveFactory<T>(x));
@@ -34,6 +40,19 @@ namespace AspNetChat.Extensions
 			where TInstance : class
 		{
 			services.AddSingleton<TInstance>();
+
+			var type = typeof(TInstance);
+
+			foreach (var targetType in type.GetInterfaces()) 
+			{
+				services.AddSingleton(targetType, x => x.GetService<TInstance>()!);
+			}
+		}
+
+		public static void BindSingletonInterfacesTo<TInstance>(this IServiceCollection services, params object[] parameters)
+			where TInstance : class
+		{
+			services.AddSingleton(p => p.ResolveWith<TInstance>(parameters));
 
 			var type = typeof(TInstance);
 

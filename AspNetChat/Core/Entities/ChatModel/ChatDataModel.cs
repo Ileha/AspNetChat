@@ -1,16 +1,14 @@
 ﻿using AspNetChat.Core.Factories;
 using AspNetChat.Core.Interfaces;
 using AspNetChat.Core.Interfaces.Factories;
-using System;
 using System.Collections.Concurrent;
 using System.Security.Cryptography;
 using System.Text;
-using System.Xml.Linq;
 
 namespace AspNetChat.Core.Entities.Model
 {
 
-    public class ChatDataModel : IChatContainer
+	public class ChatDataModel : IChatContainer
     {
         private readonly ConcurrentDictionary<Guid, IChat> _chats = new();
         private readonly IFactory<ChatFactory.ChatParams, IChat> _chatFactory;

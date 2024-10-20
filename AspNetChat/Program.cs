@@ -6,6 +6,7 @@ using AspNetChat.Core.Interfaces.Factories;
 using AspNetChat.Core.Interfaces.Services;
 using AspNetChat.Core.Services;
 using AspNetChat.Core.Services.System;
+using AspNetChat.DataBase.Mongo;
 using AspNetChat.Extensions;
 using CommandLine;
 using Microsoft.AspNetCore.StaticFiles.Infrastructure;
@@ -105,6 +106,9 @@ namespace AspNetChat
 			builder.Services.BindSingletonInterfacesTo<DisconnectionService>();
 			builder.Services.BindSingletonInterfacesTo<MessageReceiverService>();
 			builder.Services.AddSingleton<ChatEventComposer>();
+
+			var dbConnection = options.DataBaseConnection.ToArray();
+			new MongoInstaller(builder.Services, dbConnection[0], dbConnection[1]).Install();
 
 			// Add services to the container.
 			builder.Services.AddRazorPages();

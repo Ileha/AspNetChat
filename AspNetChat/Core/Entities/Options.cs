@@ -12,5 +12,8 @@ namespace AspNetChat.Core.Entities
 
 		[Option("staticFiles", Required = false, HelpText = "override static files location")]
 		public string? StaticFilesLocation { get; set; }
+
+		[Option("db", Required = true, HelpText = "configuration for database, first connection string, second data base name")]
+		public required IEnumerable<string> DataBaseConnection { get; set; }
 	}
 }

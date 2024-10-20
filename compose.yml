@@ -1,0 +1,23 @@
+﻿services:
+  chat-server:
+    build: AspNetChat/
+    volumes:
+      - ./AspNetChat/bin/Debug/net8.0:/app/application:ro
+      - ./AspNetChat/wwwroot:/app/wwwroot:ro
+      - ${APPDATA}/Microsoft/UserSecrets/df882b04-e4b6-471b-8a14-25b1d19741c0:/app/usersecrets:ro
+    ports:
+      - "8080:8080"
+      - "8081:8081"
+    depends_on:
+      - chat-database
+  chat-database:
+    image: mongo:7.0
+    restart: 'always'
+    environment:
+      - 'MONGO_INITDB_ROOT_USERNAME=root'
+      - 'MONGO_INITDB_ROOT_PASSWORD=example'
+    volumes:
+      - asp-net-chat-data:/data/db
+volumes:
+  asp-net-chat-data:
+    driver: local
