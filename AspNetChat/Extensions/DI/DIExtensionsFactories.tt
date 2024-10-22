@@ -1,0 +1,111 @@
+﻿<#@ template debug="false" hostspecific="false" language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ output extension=".cs" #>
+using AspNetChat.Core.Interfaces.Factories;
+
+namespace AspNetChat.Extensions.DI
+{
+    public static partial class DIExtensions
+    {
+<# for (int i = 0; i <= 10; i++)
+{ #>
+        public static void AddFactoryTo<<#= string.Join(", ", Enumerable.Repeat(0, i).Select((_, i) => $"P{i}")) #><#= i==0 ? "" : ", "#>TContract, TInstance>(this IServiceCollection services)
+            where TInstance : class, TContract
+        {
+            services.AddSingleton<IFactory<<#= string.Join(", ", Enumerable.Repeat(0, i).Select((_, i) => $"P{i}")) #><#= i==0 ? "" : ", "#>TContract>, ResolveFactoryContract<<#= string.Join(", ", Enumerable.Repeat(0, i).Select((_, i) => $"P{i}")) #><#= i==0 ? "" : ", "#>TContract, TInstance>>(x => new ResolveFactoryContract<<#= string.Join(", ", Enumerable.Repeat(0, i).Select((_, i) => $"P{i}")) #><#= i==0 ? "" : ", "#>TContract, TInstance>(x));
+        }
+
+        private class ResolveFactoryContract<<#= string.Join(", ", Enumerable.Repeat(0, i).Select((_, i) => $"P{i}")) #><#= i==0 ? "" : ", "#>TContract, TInstance> : IFactory<<#= string.Join(", ", Enumerable.Repeat(0, i).Select((_, i) => $"P{i}")) #><#= i==0 ? "" : ", "#>TContract>
+			where TInstance : class, TContract
+		{
+			private readonly IServiceProvider _serviceProvider;
+
+			public ResolveFactoryContract(IServiceProvider serviceProvider)
+			{
+				_serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(_serviceProvider));
+			}
+
+			public TContract Create(<#= string.Join(", ", Enumerable.Repeat(0, i).Select((_, i) => $"P{i} param{i}")) #>)
+			{
+<#if (i == 0)
+{
+#>
+                return _serviceProvider.ResolveWith<TInstance>();
+<#}
+else 
+{
+#>
+                return _serviceProvider.ResolveWith<TInstance>(parameters: new object[] { <#= string.Join(", ", Enumerable.Repeat(0, i).Select((_, i) => $"param{i}")) #> });
+<# } #>
+			}
+		}
+
+<# } #>
+
+<# for (int i = 0; i <= 10; i++)
+{ #>
+        public static void AddFactory<<#= string.Join(", ", Enumerable.Repeat(0, i).Select((_, i) => $"P{i}")) #><#= i==0 ? "" : ", "#>T>(this IServiceCollection services)
+            where T : class
+        {
+            services.AddSingleton<IFactory<<#= string.Join(", ", Enumerable.Repeat(0, i).Select((_, i) => $"P{i}")) #><#= i==0 ? "" : ", "#>T>, ResolveFactory<<#= string.Join(", ", Enumerable.Repeat(0, i).Select((_, i) => $"P{i}")) #><#= i==0 ? "" : ", "#>T>>(x => new ResolveFactory<<#= string.Join(", ", Enumerable.Repeat(0, i).Select((_, i) => $"P{i}")) #><#= i==0 ? "" : ", "#>T>(x));
+        }
+
+        private class ResolveFactory<<#= string.Join(", ", Enumerable.Repeat(0, i).Select((_, i) => $"P{i}")) #><#= i==0 ? "" : ", "#>T> : IFactory<<#= string.Join(", ", Enumerable.Repeat(0, i).Select((_, i) => $"P{i}")) #><#= i==0 ? "" : ", "#>T>
+			where T : class
+		{
+			private readonly IServiceProvider _serviceProvider;
+
+			public ResolveFactory(IServiceProvider serviceProvider)
+			{
+				_serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(_serviceProvider));
+			}
+
+			public T Create(<#= string.Join(", ", Enumerable.Repeat(0, i).Select((_, i) => $"P{i} param{i}")) #>)
+			{
+<#if (i == 0)
+{
+#>
+                return _serviceProvider.ResolveWith<T>();
+<#}
+else 
+{
+#>
+                return _serviceProvider.ResolveWith<T>(parameters: new object[] { <#= string.Join(", ", Enumerable.Repeat(0, i).Select((_, i) => $"param{i}")) #> });
+<# } #>
+			}
+		}
+
+<# } #>
+
+<# for (int i = 0; i <= 10; i++)
+{ #>
+        public static void AddFactoryFromMethod<<#= string.Join(", ", Enumerable.Repeat(0, i).Select((_, i) => $"P{i}")) #><#= i==0 ? "" : ", "#>T>(this IServiceCollection services, Func<IServiceProvider, <#= string.Join(", ", Enumerable.Repeat(0, i).Select((_, i) => $"P{i}")) #><#= i==0 ? "" : ", "#>T> func)
+        {
+            services.AddSingleton<IFactory<<#= string.Join(", ", Enumerable.Repeat(0, i).Select((_, i) => $"P{i}")) #><#= i==0 ? "" : ", "#>T>, FactoryFromMethod<<#= string.Join(", ", Enumerable.Repeat(0, i).Select((_, i) => $"P{i}")) #><#= i==0 ? "" : ", "#>T>>(x => new FactoryFromMethod<<#= string.Join(", ", Enumerable.Repeat(0, i).Select((_, i) => $"P{i}")) #><#= i==0 ? "" : ", "#>T>(x, func));
+        }
+
+        private class FactoryFromMethod<<#= string.Join(", ", Enumerable.Repeat(0, i).Select((_, i) => $"P{i}")) #><#= i==0 ? "" : ", "#>T> : IFactory<<#= string.Join(", ", Enumerable.Repeat(0, i).Select((_, i) => $"P{i}")) #><#= i==0 ? "" : ", "#>T>
+        {
+            private readonly IServiceProvider _serviceProvider;
+            private readonly Func<IServiceProvider, <#= string.Join(", ", Enumerable.Repeat(0, i).Select((_, i) => $"P{i}")) #><#= i==0 ? "" : ", "#> T> _func;
+
+            public FactoryFromMethod(
+                IServiceProvider serviceProvider,
+                Func<IServiceProvider, <#= string.Join(", ", Enumerable.Repeat(0, i).Select((_, i) => $"P{i}")) #><#= i==0 ? "" : ", "#>T> func)
+            {
+                _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
+                _func = func ?? throw new ArgumentNullException(nameof(func));
+            }
+
+            public T Create(<#= string.Join(", ", Enumerable.Repeat(0, i).Select((_, i) => $"P{i} param{i}")) #>)
+            {
+                return _func.Invoke(_serviceProvider<#= i==0 ? "" : ", "#><#= string.Join(", ", Enumerable.Repeat(0, i).Select((_, i) => $"param{i}")) #>);
+            }
+        }
+
+<# } #>
+    }
+}

@@ -14,6 +14,16 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="Core\Interfaces\Factories\IFactory.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>IFactory.tt</DependentUpon>
+    </None>
+    <None Include="Extensions\DI\DIExtensionsFactories.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>DIExtensionsFactories.tt</DependentUpon>
+    </None>
     <None Include="Extensions\TaskExtensions.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
@@ -29,6 +39,14 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="Core\Interfaces\Factories\IFactory.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>IFactory.cs</LastGenOutput>
+    </None>
+    <None Update="Extensions\DI\DIExtensionsFactories.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>DIExtensionsFactories.cs</LastGenOutput>
+    </None>
     <None Update="Extensions\TaskExtensions.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>TaskExtensions.cs</LastGenOutput>
@@ -40,11 +58,25 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="Core\Interfaces\Factories\IFactory.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>IFactory.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Extensions\DI\DIExtensionsFactories.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>DIExtensionsFactories.tt</DependentUpon>
+    </Compile>
     <Compile Update="Extensions\TaskExtensions.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
       <DependentUpon>TaskExtensions.tt</DependentUpon>
     </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Core\Factories\" />
   </ItemGroup>
 
 </Project>
