@@ -95,7 +95,7 @@ namespace AspNetChat
 
 			builder.Services.AddSingleton<IChatContainer, ChatDataModel>();
 			builder.Services.AddFactoryTo<IChat.ChatParams, IChat, ChatModel>();
-			builder.Services.AddFactoryTo< IChatPartisipant.ParticipantParams, IChatPartisipant, ChatParticipant>();
+			builder.Services.AddFactoryTo<IChatPartisipant.ParticipantParams, IChatPartisipant, ChatParticipant>();
 			builder.Services.BindSingletonInterfacesTo<MessageListPublisherService>();
 			builder.Services.AddSingleton<ChatUserHelper>();
 			builder.Services.BindSingletonInterfacesTo<DisconnectionService>();

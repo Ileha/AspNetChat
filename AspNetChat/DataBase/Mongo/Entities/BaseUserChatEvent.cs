@@ -4,14 +4,14 @@ using AspNetChat.DataBase.Mongo.Inerfaces;
 
 namespace AspNetChat.DataBase.Mongo.Entities
 {
-	internal enum UserEventType
+	public enum UserEventType
 	{
 		Joined = 0,
 		Message = 1,
 		Disconnected = 2,
 	}
 
-	internal abstract class BaseUserChatEvent
+	public abstract class BaseUserChatEvent
 	{
 		[BsonId]
 		[BsonGuidRepresentation(GuidRepresentation.Standard)]
@@ -28,7 +28,7 @@ namespace AspNetChat.DataBase.Mongo.Entities
 		public abstract void Accept(IUserChatEventVisitor visitor);
 	}
 
-	internal class UserJoined : BaseUserChatEvent
+	public class UserJoined : BaseUserChatEvent
 	{
 		public override void Accept(IUserChatEventVisitor visitor)
 		{
@@ -39,7 +39,7 @@ namespace AspNetChat.DataBase.Mongo.Entities
 		}
 	}
 
-	internal class UserSendMessage : BaseUserChatEvent
+	public class UserSendMessage : BaseUserChatEvent
 	{
 		public string Message { get; set; }
 
@@ -52,7 +52,7 @@ namespace AspNetChat.DataBase.Mongo.Entities
 		}
 	}
 
-	internal class UserDisconnected : BaseUserChatEvent
+	public class UserDisconnected : BaseUserChatEvent
 	{
 		public override void Accept(IUserChatEventVisitor visitor)
 		{

@@ -1,6 +1,7 @@
 ﻿using AspNetChat.Core.Interfaces;
 using AspNetChat.Core.Interfaces.Services.Storage;
 using AspNetChat.DataBase.Mongo.Entities;
+using AspNetChat.Extensions.DI;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
 
@@ -15,9 +16,20 @@ namespace AspNetChat.DataBase.Mongo
 		
 		private readonly CancellationTokenSource _lifeTokenSource;
 		private readonly CancellationToken _lifeToken;
+		private readonly IFactory<IIdentifiable, IMongoClient, IMongoCollection<BaseUserChatEvent>, IMongoCollection<User>, CancellationToken, IChatStorage> _chatStorageFactory;
 
-		public MongoDataBaseService(string connection, string dataBaseService) 
+		public MongoDataBaseService(
+			string connection, 
+			string dataBaseService,
+			IFactory<
+				IIdentifiable,
+				IMongoClient,
+				IMongoCollection<BaseUserChatEvent>,
+				IMongoCollection<User>,
+				CancellationToken,
+				IChatStorage> chatStorageFactory) 
 		{
+			_chatStorageFactory = chatStorageFactory ?? throw new ArgumentNullException(nameof(chatStorageFactory));
 			_client = new MongoClient(connection);
 			_database = _client.GetDatabase(dataBaseService);
 
@@ -50,7 +62,7 @@ namespace AspNetChat.DataBase.Mongo
 
 		public IChatStorage GetChatStorage(IIdentifiable chat)
 		{
-			throw new NotImplementedException();
+			return _chatStorageFactory.Create(chat, _client, _chatCollections, _userCollections, _lifeToken);
 		}
 
 		public void Dispose()

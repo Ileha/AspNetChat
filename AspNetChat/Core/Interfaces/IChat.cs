@@ -8,7 +8,7 @@ namespace AspNetChat.Core.Interfaces
 		Task<IReadOnlyList<IEvent>> GetChatMessageList();
         bool HasPartisipant(IIdentifiable partisipant);
 
-		Task JoinParticipant(IChatPartisipant partisipant);
+		Task<IChatPartisipant> JoinParticipant(IChatPartisipant partisipant);
 		Task DisconnectedParticipant(IIdentifiable partisipant);
 		Task SendMessage(IIdentifiable partisipant, string message);
 

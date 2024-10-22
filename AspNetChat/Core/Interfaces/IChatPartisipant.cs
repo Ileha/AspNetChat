@@ -4,6 +4,6 @@
     {
         string Name { get; }
 
-		public record ParticipantParams(string name);
+		public record ParticipantParams(string name, Guid Guid);
 	}
 }

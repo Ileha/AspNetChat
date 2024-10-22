@@ -31,12 +31,12 @@ namespace AspNetChat.Pages
             Response.Redirect("/Chat");
         }
 
-        public void OnGetJoinChatRoom(string chatName, string userName)
+        public async Task OnGetJoinChatRoom(string chatName, string userName)
         {
 			Chat = _chatContainer.GetChatByName(chatName);
 
-            ChatUser = _participantFactory.Create(new IChatPartisipant.ParticipantParams(userName));
-			Chat.JoinParticipant(ChatUser);
+            var tempUser = _participantFactory.Create(new IChatPartisipant.ParticipantParams(userName, Guid.NewGuid()));
+			ChatUser = await Chat.JoinParticipant(tempUser);
         }
 
         public async Task<IReadOnlyList<BaseUserEvent>> GetMessageList() 

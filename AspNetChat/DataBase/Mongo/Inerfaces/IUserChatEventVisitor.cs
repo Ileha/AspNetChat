@@ -2,7 +2,7 @@
 
 namespace AspNetChat.DataBase.Mongo.Inerfaces
 {
-	internal interface IUserChatEventVisitor
+	public interface IUserChatEventVisitor
 	{
 		void Visit(UserJoined joined);
 		void Visit(UserSendMessage sendMessage);

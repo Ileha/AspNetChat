@@ -1,6 +1,9 @@
-﻿using AspNetChat.DataBase.Mongo.Entities;
+﻿using AspNetChat.Core.Interfaces;
+using AspNetChat.Core.Interfaces.Services.Storage;
+using AspNetChat.DataBase.Mongo.Entities;
 using AspNetChat.Extensions.DI;
 using MongoDB.Bson.Serialization;
+using MongoDB.Driver;
 
 namespace AspNetChat.DataBase.Mongo
 {
@@ -25,6 +28,14 @@ namespace AspNetChat.DataBase.Mongo
 			BsonClassMap.RegisterClassMap<UserDisconnected>();
 
 			_services.BindSingletonInterfacesTo<MongoDataBaseService>(_connectionString, _databaseName);
+			_services.AddFactoryTo<
+				IIdentifiable,
+				IMongoClient,
+				IMongoCollection<BaseUserChatEvent>,
+				IMongoCollection<User>,
+				CancellationToken,
+				IChatStorage,
+				MongoChatStorage>();
 		}
     }
 }

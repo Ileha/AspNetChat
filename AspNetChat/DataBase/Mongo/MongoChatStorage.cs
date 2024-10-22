@@ -15,14 +15,14 @@ namespace AspNetChat.DataBase.Mongo
 	internal class MongoChatStorage : IChatStorage
 	{
 		private readonly IIdentifiable _chat;
-		private readonly MongoClient _client;
+		private readonly IMongoClient _client;
 		private readonly IMongoCollection<BaseUserChatEvent> _chatCollection;
 		private readonly IMongoCollection<User> _userCollection;
 		private readonly CancellationToken _token;
 
-		internal MongoChatStorage(
+		public MongoChatStorage(
 			IIdentifiable chat,
-			MongoClient client, 
+			IMongoClient client, 
 			IMongoCollection<BaseUserChatEvent> chatCollection,
 			IMongoCollection<User> userCollection, 
 			CancellationToken token) 
