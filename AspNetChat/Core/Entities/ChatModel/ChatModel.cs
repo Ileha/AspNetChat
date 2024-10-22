@@ -2,6 +2,7 @@
 using AspNetChat.Core.Interfaces;
 using AspNetChat.Core.Interfaces.ChatEvents;
 using AspNetChat.Core.Interfaces.Services;
+using AspNetChat.Core.Interfaces.Services.Storage;
 using AspNetChat.Extensions.Comparers;
 using System.Collections.Concurrent;
 
@@ -11,62 +12,63 @@ namespace AspNetChat.Core.Entities.Model
     {
         public Guid Id { get; }
 
-        private readonly object _eventsLocker = new object();
-        private readonly SortedSet<IEvent> _events = new SortedSet<IEvent>(new EventsComparer());
         private readonly ConcurrentDictionary<IIdentifiable, byte> _participants = new ConcurrentDictionary<IIdentifiable, byte>(new IdentifiableEqualityComparer());
 		private readonly IMessageConsumerService _messageConsumerService;
+		private readonly IChatStorage _chatStorage;
+		private readonly IUserStorage _userStorage;
 
-		public ChatModel(Guid guid, IMessageConsumerService messageConsumerService)
+		public ChatModel(
+            Guid guid, 
+            IMessageConsumerService messageConsumerService, 
+            IChatStorage chatStorage,
+            IUserStorage userStorage)
         {
             Id = guid;
 			_messageConsumerService = messageConsumerService ?? throw new ArgumentNullException(nameof(messageConsumerService));
+			_chatStorage = chatStorage ?? throw new ArgumentNullException(nameof(chatStorage));
+			_userStorage = userStorage ?? throw new ArgumentNullException(nameof(userStorage));
 		}
 
-        public IReadOnlyList<IEvent> GetChatMessageList()
+        public async Task<IReadOnlyList<IEvent>> GetChatMessageList()
         {
-            lock (_eventsLocker)
-            {
-                return _events.ToArray();
-			}
+            return (await _chatStorage.GetChatEvents()).ToArray();
         }
 
-        public void JoinParticipant(IChatPartisipant partisipant)
+        public async Task JoinParticipant(IChatPartisipant partisipant)
         {
-            if (!_participants.TryAdd(partisipant, 0))
-				throw new InvalidOperationException($"chat already has participant with {partisipant.Id}");
+            var realParticipant = await _userStorage.AddOrGetParticipant(partisipant, partisipant);
 
-			lock (_eventsLocker)
-            {
-                _events.Add(new UserConnected(partisipant.Name, partisipant.Id, GetTime()));
-            }
+            if (!_participants.TryAdd(realParticipant, 0))
+				throw new InvalidOperationException($"chat already has participant with {realParticipant.Id}");
+
+            await _chatStorage.AddEvent(new UserConnected(realParticipant.Name, realParticipant.Id, GetTime()));
 
             PostEvents();
         }
 
-        public void SendMessage(IIdentifiable partisipant, string message)
+        public async Task SendMessage(IIdentifiable partisipant, string message)
         {
             if (!_participants.ContainsKey(partisipant))
 				throw new InvalidOperationException($"chat don't have participant with {partisipant.Id}");
 
-			lock (_eventsLocker)
-            {
-                _events.Add(new UserSendMessage(partisipant.Id, message, GetTime()));
-            }
+            await _chatStorage.AddEvent(new UserSendMessage(partisipant.Id, message, GetTime()));
 
             PostEvents();
 		}
 
-		public void DisconnectedParticipant(IIdentifiable partisipant)
+		public async Task DisconnectedParticipant(IIdentifiable partisipant)
 		{
             if (!_participants.TryRemove(partisipant, out _))
 				throw new InvalidOperationException($"chat don't have participant with {partisipant.Id}");
 
-			lock (_eventsLocker)
-			{
-				_events.Add(new UserDisconnected(partisipant.Id, GetTime()));
-			}
+            await _chatStorage.AddEvent(new UserDisconnected(partisipant.Id, GetTime()));
 
 			PostEvents();
+		}
+
+		public bool HasPartisipant(IIdentifiable partisipant)
+		{
+			return _participants.ContainsKey(partisipant);
 		}
 
 		private DateTime GetTime()
@@ -76,20 +78,12 @@ namespace AspNetChat.Core.Entities.Model
 
         private Task PostEvents()
         {
-            return Task.Run(() =>
+            return Task.Run(async () =>
             {
-
-                var messages = GetChatMessageList();
+                var messages = await GetChatMessageList();
 
 				_messageConsumerService.ConsumeMessage(this, messages);
-
-
 			});
         }
-
-		public bool HasPartisipant(IIdentifiable partisipant)
-		{
-            return _participants.ContainsKey(partisipant);
-		}
-    }
+	}
 }

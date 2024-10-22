@@ -1,14 +1,17 @@
 ﻿using AspNetChat.Core.Interfaces.ChatEvents;
+using AspNetChat.Core.Interfaces.Services.Storage;
 
 namespace AspNetChat.Core.Interfaces
 {
     public interface IChat : IIdentifiable
     {
-		IReadOnlyList<IEvent> GetChatMessageList();
+		Task<IReadOnlyList<IEvent>> GetChatMessageList();
         bool HasPartisipant(IIdentifiable partisipant);
 
-		void JoinParticipant(IChatPartisipant partisipant);
-        void DisconnectedParticipant(IIdentifiable partisipant);
-        void SendMessage(IIdentifiable partisipant, string message);
-    }
+		Task JoinParticipant(IChatPartisipant partisipant);
+		Task DisconnectedParticipant(IIdentifiable partisipant);
+		Task SendMessage(IIdentifiable partisipant, string message);
+
+		public record ChatParams(Guid Guid, IChatStorage ChatStorage);
+	}
 }

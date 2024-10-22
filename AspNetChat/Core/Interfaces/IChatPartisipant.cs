@@ -3,5 +3,7 @@
     public interface IChatPartisipant : IIdentifiable
     {
         string Name { get; }
-    }
+
+		public record ParticipantParams(string name);
+	}
 }

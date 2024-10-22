@@ -1,13 +1,12 @@
 using AspNetChat.Core.Entities;
 using AspNetChat.Core.Entities.Model;
-using AspNetChat.Core.Factories;
 using AspNetChat.Core.Interfaces;
-using AspNetChat.Core.Interfaces.Factories;
 using AspNetChat.Core.Interfaces.Services;
 using AspNetChat.Core.Services;
 using AspNetChat.Core.Services.System;
 using AspNetChat.DataBase.Mongo;
 using AspNetChat.Extensions;
+using AspNetChat.Extensions.DI;
 using CommandLine;
 using Microsoft.AspNetCore.StaticFiles.Infrastructure;
 using Microsoft.Extensions.FileProviders;
@@ -16,7 +15,7 @@ using System.Text;
 
 namespace AspNetChat
 {
-	public class Program
+    public class Program
     {
 		public static void Main(string[] args)
 		{
@@ -95,12 +94,8 @@ namespace AspNetChat
 			builder.Services.AddSingleton<InitializeService>();
 
 			builder.Services.AddSingleton<IChatContainer, ChatDataModel>();
-			builder.Services.AddFactoryFromMethod<ChatFactory.ChatParams, IChat>(
-				(serviceProvider, arg1) =>
-				{
-					return new ChatModel(arg1.Guid, serviceProvider.GetService<IMessageConsumerService>()!);
-				});
-			builder.Services.AddSingleton<IFactory<ParticipantFactory.ParticipantParams, IChatPartisipant>, ParticipantFactory>();
+			builder.Services.AddFactoryTo<IChat.ChatParams, IChat, ChatModel>();
+			builder.Services.AddFactoryTo< IChatPartisipant.ParticipantParams, IChatPartisipant, ChatParticipant>();
 			builder.Services.BindSingletonInterfacesTo<MessageListPublisherService>();
 			builder.Services.AddSingleton<ChatUserHelper>();
 			builder.Services.BindSingletonInterfacesTo<DisconnectionService>();

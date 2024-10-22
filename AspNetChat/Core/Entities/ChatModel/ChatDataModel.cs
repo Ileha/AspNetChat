@@ -1,28 +1,32 @@
-﻿using AspNetChat.Core.Factories;
-using AspNetChat.Core.Interfaces;
+﻿using AspNetChat.Core.Interfaces;
 using AspNetChat.Core.Interfaces.Factories;
+using AspNetChat.Core.Interfaces.Services.Storage;
 using System.Collections.Concurrent;
 using System.Security.Cryptography;
 using System.Text;
+using static AspNetChat.Core.Interfaces.IChat;
 
 namespace AspNetChat.Core.Entities.Model
 {
-
 	public class ChatDataModel : IChatContainer
     {
         private readonly ConcurrentDictionary<Guid, IChat> _chats = new();
-        private readonly IFactory<ChatFactory.ChatParams, IChat> _chatFactory;
+        private readonly IFactory<ChatParams, IChat> _chatFactory;
+		private readonly IDataBaseService _chatDataBase;
 
-        public ChatDataModel(IFactory<ChatFactory.ChatParams, IChat> chatFactory)
+		public ChatDataModel(IFactory<ChatParams, IChat> chatFactory, IDataBaseService chatDataBase)
         {
             _chatFactory = chatFactory ?? throw new ArgumentNullException(nameof(chatFactory));
-        }
+			_chatDataBase = chatDataBase ?? throw new ArgumentNullException(nameof(chatDataBase));
+		}
 
         public IChat GetChatById(Guid chatId)
         {
+            var chatStorage = _chatDataBase.GetChatStorage((Identifiable) chatId);
+
 			_chats.AddOrUpdate(
 				chatId,
-				(chatId) => _chatFactory.Create(new ChatFactory.ChatParams(chatId)),
+				(chatId) => _chatFactory.Create(new ChatParams(chatId, chatStorage)),
 				(chatId, item) => item);
 
 			return _chats[chatId];

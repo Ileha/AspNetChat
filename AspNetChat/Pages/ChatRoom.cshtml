@@ -155,7 +155,7 @@
 		};
 
 		window.onload = (event) => {
-			composeMessages(JSON.parse(`@(Html.Raw(JsonConvert.SerializeObject(Model.MessagesList)))`));
+			composeMessages(JSON.parse(`@(Html.Raw(JsonConvert.SerializeObject(await Model.GetMessageList())))`));
 		};
 
 	</script>

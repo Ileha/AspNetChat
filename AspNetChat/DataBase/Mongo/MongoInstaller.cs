@@ -1,5 +1,5 @@
 ﻿using AspNetChat.DataBase.Mongo.Entities;
-using AspNetChat.Extensions;
+using AspNetChat.Extensions.DI;
 using MongoDB.Bson.Serialization;
 
 namespace AspNetChat.DataBase.Mongo
