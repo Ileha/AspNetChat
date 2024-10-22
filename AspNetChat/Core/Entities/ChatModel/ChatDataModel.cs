@@ -1,6 +1,6 @@
 ﻿using AspNetChat.Core.Interfaces;
-using AspNetChat.Core.Interfaces.Factories;
 using AspNetChat.Core.Interfaces.Services.Storage;
+using AspNetChat.Extensions.DI;
 using System.Collections.Concurrent;
 using System.Security.Cryptography;
 using System.Text;

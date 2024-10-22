@@ -4,7 +4,7 @@
 <#@ import namespace="System.Text" #>
 <#@ import namespace="System.Collections.Generic" #>
 <#@ output extension=".cs" #>
-namespace AspNetChat.Core.Interfaces.Factories
+namespace AspNetChat.Extensions.DI
 {
 <# for (int i = 0; i <= 10; i++)
 { #>

@@ -1,4 +1,4 @@
-﻿namespace AspNetChat.Core.Interfaces.Factories
+﻿namespace AspNetChat.Extensions.DI
 {
     public interface IFactory<T>
     {

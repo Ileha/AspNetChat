@@ -1,6 +1,6 @@
 using AspNetChat.Core.Interfaces;
-using AspNetChat.Core.Interfaces.Factories;
 using AspNetChat.Core.Services;
+using AspNetChat.Extensions.DI;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using static AspNetChat.Core.Services.ChatEventComposer;
 

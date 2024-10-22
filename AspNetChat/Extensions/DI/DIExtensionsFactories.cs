@@ -1,8 +1,6 @@
-﻿using AspNetChat.Core.Interfaces.Factories;
-
-namespace AspNetChat.Extensions.DI
+﻿namespace AspNetChat.Extensions.DI
 {
-    public static partial class DIExtensions
+	public static partial class DIExtensions
     {
         public static void AddFactoryTo<TContract, TInstance>(this IServiceCollection services)
             where TInstance : class, TContract

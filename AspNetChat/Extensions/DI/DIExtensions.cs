@@ -1,9 +1,8 @@
-﻿using AspNetChat.Core.Interfaces.Factories;
-using AspNetChat.Extensions.DI;
+﻿using AspNetChat.Extensions.DI;
 
 namespace AspNetChat.Extensions.DI
 {
-    public static partial class DIExtensions
+	public static partial class DIExtensions
     {
         public static T ResolveWith<T>(this IServiceProvider provider, params object[] parameters)
             where T : class

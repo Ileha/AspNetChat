@@ -10,11 +10,18 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Core\Factories\**" />
+    <Content Remove="Core\Factories\**" />
+    <EmbeddedResource Remove="Core\Factories\**" />
+    <None Remove="Core\Factories\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Include="Pages\Index.cshtml.cs" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="Core\Interfaces\Factories\IFactory.cs">
+    <None Include="Extensions\DI\IFactory.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
       <DependentUpon>IFactory.tt</DependentUpon>
@@ -39,7 +46,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Core\Interfaces\Factories\IFactory.tt">
+    <None Update="Extensions\DI\IFactory.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>IFactory.cs</LastGenOutput>
     </None>
@@ -58,7 +65,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="Core\Interfaces\Factories\IFactory.cs">
+    <Compile Update="Extensions\DI\IFactory.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
       <DependentUpon>IFactory.tt</DependentUpon>
@@ -73,10 +80,6 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>TaskExtensions.tt</DependentUpon>
     </Compile>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Core\Factories\" />
   </ItemGroup>
 
 </Project>
