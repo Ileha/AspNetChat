@@ -1,6 +1,7 @@
 ﻿services:
   chat-server:
-    build: AspNetChat/
+    build: 
+      dockerfile: AspNetChat/Dockerfile
     volumes:
       - ./AspNetChat/bin/Debug/net8.0:/app/application:ro
       - ./AspNetChat/wwwroot:/app/wwwroot:ro
@@ -10,6 +11,8 @@
       - "8081:8081"
     depends_on:
       - chat-database
+    environment:
+      - 'CHAT_ARGS=--customHttps -j /app/usersecrets/secrets.json --staticFiles /app/wwwroot --db mongodb://chat-database:27017 ChatDB'
   chat-database:
     image: mongo:7.0
     restart: 'always'
