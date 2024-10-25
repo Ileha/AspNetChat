@@ -14,6 +14,15 @@
     <Content Remove="Core\Factories\**" />
     <EmbeddedResource Remove="Core\Factories\**" />
     <None Remove="Core\Factories\**" />
+    <None Update="Extensions\DI\DIExtensionsSingletons.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>DIExtensionsSingletons.cs</LastGenOutput>
+    </None>
+    <Compile Update="Extensions\DI\DIExtensionsSingletons.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>DIExtensionsSingletons.tt</DependentUpon>
+    </Compile>
   </ItemGroup>
 
   <ItemGroup>

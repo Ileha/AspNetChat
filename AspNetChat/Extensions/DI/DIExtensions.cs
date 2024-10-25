@@ -1,6 +1,4 @@
-﻿using AspNetChat.Extensions.DI;
-
-namespace AspNetChat.Extensions.DI
+﻿namespace AspNetChat.Extensions.DI
 {
 	public static partial class DIExtensions
     {
@@ -13,17 +11,6 @@ namespace AspNetChat.Extensions.DI
         public static void AddFactoryFromResolve<T>(this IServiceCollection services)
         {
             services.AddSingleton<IFactory<T>, FromResolveFactory<T>>(x => new FromResolveFactory<T>(x));
-        }
-
-		public static void AddSingleton<TService1, ITService2, TInstance>(this IServiceCollection services)
-            where TInstance : class, TService1, ITService2
-            where TService1 : class
-            where ITService2 : class
-        {
-            services.AddSingleton<TInstance>();
-
-            services.AddSingleton<TService1, TInstance>(x => x.GetService<TInstance>()!);
-            services.AddSingleton<ITService2, TInstance>(x => x.GetService<TInstance>()!);
         }
 
         public static void BindSingletonInterfacesTo<TInstance>(this IServiceCollection services)
@@ -59,7 +46,7 @@ namespace AspNetChat.Extensions.DI
 
             public FromResolveFactory(IServiceProvider serviceProvider)
             {
-                _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(_serviceProvider));
+                _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
             }
 
             public T Create()

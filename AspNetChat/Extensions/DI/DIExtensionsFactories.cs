@@ -1,6 +1,6 @@
 ﻿namespace AspNetChat.Extensions.DI
 {
-	public static partial class DIExtensions
+    public static partial class DIExtensions
     {
         public static void AddFactoryTo<TContract, TInstance>(this IServiceCollection services)
             where TInstance : class, TContract
@@ -15,7 +15,7 @@
 
 			public ResolveFactoryContract(IServiceProvider serviceProvider)
 			{
-				_serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(_serviceProvider));
+				_serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
 			}
 
 			public TContract Create()
@@ -37,7 +37,7 @@
 
 			public ResolveFactoryContract(IServiceProvider serviceProvider)
 			{
-				_serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(_serviceProvider));
+				_serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
 			}
 
 			public TContract Create(P0 param0)
@@ -59,7 +59,7 @@
 
 			public ResolveFactoryContract(IServiceProvider serviceProvider)
 			{
-				_serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(_serviceProvider));
+				_serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
 			}
 
 			public TContract Create(P0 param0, P1 param1)
@@ -81,7 +81,7 @@
 
 			public ResolveFactoryContract(IServiceProvider serviceProvider)
 			{
-				_serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(_serviceProvider));
+				_serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
 			}
 
 			public TContract Create(P0 param0, P1 param1, P2 param2)
@@ -103,7 +103,7 @@
 
 			public ResolveFactoryContract(IServiceProvider serviceProvider)
 			{
-				_serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(_serviceProvider));
+				_serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
 			}
 
 			public TContract Create(P0 param0, P1 param1, P2 param2, P3 param3)
@@ -125,7 +125,7 @@
 
 			public ResolveFactoryContract(IServiceProvider serviceProvider)
 			{
-				_serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(_serviceProvider));
+				_serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
 			}
 
 			public TContract Create(P0 param0, P1 param1, P2 param2, P3 param3, P4 param4)
@@ -147,7 +147,7 @@
 
 			public ResolveFactoryContract(IServiceProvider serviceProvider)
 			{
-				_serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(_serviceProvider));
+				_serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
 			}
 
 			public TContract Create(P0 param0, P1 param1, P2 param2, P3 param3, P4 param4, P5 param5)
@@ -169,7 +169,7 @@
 
 			public ResolveFactoryContract(IServiceProvider serviceProvider)
 			{
-				_serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(_serviceProvider));
+				_serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
 			}
 
 			public TContract Create(P0 param0, P1 param1, P2 param2, P3 param3, P4 param4, P5 param5, P6 param6)
@@ -191,7 +191,7 @@
 
 			public ResolveFactoryContract(IServiceProvider serviceProvider)
 			{
-				_serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(_serviceProvider));
+				_serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
 			}
 
 			public TContract Create(P0 param0, P1 param1, P2 param2, P3 param3, P4 param4, P5 param5, P6 param6, P7 param7)
@@ -213,7 +213,7 @@
 
 			public ResolveFactoryContract(IServiceProvider serviceProvider)
 			{
-				_serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(_serviceProvider));
+				_serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
 			}
 
 			public TContract Create(P0 param0, P1 param1, P2 param2, P3 param3, P4 param4, P5 param5, P6 param6, P7 param7, P8 param8)
@@ -235,7 +235,7 @@
 
 			public ResolveFactoryContract(IServiceProvider serviceProvider)
 			{
-				_serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(_serviceProvider));
+				_serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
 			}
 
 			public TContract Create(P0 param0, P1 param1, P2 param2, P3 param3, P4 param4, P5 param5, P6 param6, P7 param7, P8 param8, P9 param9)

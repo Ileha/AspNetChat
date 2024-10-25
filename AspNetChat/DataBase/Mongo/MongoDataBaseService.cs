@@ -2,6 +2,7 @@
 using AspNetChat.Core.Interfaces.Services.Storage;
 using AspNetChat.DataBase.Mongo.Entities;
 using AspNetChat.Extensions.DI;
+using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
 
@@ -42,22 +43,22 @@ namespace AspNetChat.DataBase.Mongo
 
 		public async Task<IChatPartisipant> AddOrGetParticipant(IIdentifiable identifiable, IChatPartisipant partisipant)
 		{
+			var mongoUser = new User() { Id = partisipant.Id, Name = partisipant.Name };
 
-			using var session = await _client.StartSessionAsync();
-				
-			return await session.WithTransactionAsync(async (session, token) =>
-			{
-				var user = await _userCollections.Find(dbUser => dbUser.Name.Equals(partisipant.Name)).FirstOrDefaultAsync(token);
+			var updateResult = await _userCollections.UpdateOneAsync(
+				dbUser => dbUser.Name.Equals(partisipant.Name),
+				new BsonDocument("$setOnInsert", mongoUser.ToBsonDocument()),
+				new UpdateOptions() { IsUpsert = true }, cancellationToken: _lifeToken);
 
-				if (user != null)
-					return new MongoChatParticipant(user);
+			if (!updateResult.IsAcknowledged)
+				throw new InvalidOperationException($"failed to update user");
 
-				var mongoUser = new User() { Id = partisipant.Id, Name = partisipant.Name };
+			var user = await _userCollections
+				.AsQueryable()
+				.Where(dbUser => dbUser.Name.Equals(partisipant.Name))
+				.FirstAsync(cancellationToken: _lifeToken);
 
-				await _userCollections.InsertOneAsync(mongoUser, options: null, token);
-
-				return partisipant;
-			}, cancellationToken: _lifeToken);
+			return new MongoChatParticipant(user);
 		}
 
 		public IChatStorage GetChatStorage(IIdentifiable chat)

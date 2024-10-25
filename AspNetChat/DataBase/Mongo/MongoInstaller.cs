@@ -17,7 +17,7 @@ namespace AspNetChat.DataBase.Mongo
         {
 			_services = services ?? throw new ArgumentNullException(nameof(services));
 			_connectionString = connectionString ?? throw new ArgumentNullException(nameof(connectionString));
-			_databaseName = databaseName ?? throw new ArgumentNullException(nameof(connectionString));
+			_databaseName = databaseName ?? throw new ArgumentNullException(nameof(databaseName));
 		}
 
         public void Install() 

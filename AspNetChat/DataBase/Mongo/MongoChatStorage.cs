@@ -6,7 +6,6 @@ using AspNetChat.DataBase.Mongo.Entities;
 using AspNetChat.DataBase.Mongo.Inerfaces;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
-using TaskExtensions = AspNetChat.Extensions.TaskExtensions;
 using UserDisconnected = AspNetChat.DataBase.Mongo.Entities.UserDisconnected;
 using UserSendMessage = AspNetChat.DataBase.Mongo.Entities.UserSendMessage;
 
@@ -48,42 +47,26 @@ namespace AspNetChat.DataBase.Mongo
 
 		public async Task<IEnumerable<IEvent>> GetChatEvents()
 		{
-			using var session = await _client.StartSessionAsync();
+			var dbEvents = await _chatCollection
+				.AsQueryable()
+				.Where(@event => _chat.Id.Equals(@event.ChatId))
+				.OrderBy(@event => @event.Time)
+				.Join(
+					_userCollection.AsQueryable(),
+					@event => @event.UserId,
+					user => user.Id,
+					(@event, user) => new DBEvent(@event, user)
+				)
+				.ToListAsync();
 
-			var dbEvents = await session.WithTransactionAsync(async (session, token) =>
-			{
-				var data = await TaskExtensions.WhenAll(
-					_chatCollection
-						.AsQueryable()
-						.Where(@event => _chat.Id.Equals(@event.ChatId))
-						.OrderBy(@event => @event.Time)
-						.ToListAsync(token),
-					_chatCollection
-						.AsQueryable()
-						.Where(@event => _chat.Id.Equals(@event.ChatId) && @event is UserJoined)
-						.Select(@event => @event.UserId)
-						.Distinct()
-						.Join(
-							_userCollection.AsQueryable(),
-							eventId => eventId,
-							user => user.Id,
-							(_, user) => user)
-						.ToListAsync(token)
-					);
+			var converter = new ChatEvent2EventConverter();
 
-				var id2User = data.Item2.ToDictionary(data => data.Id);
-
-				return (id2User, data.Item1);
-
-			}, cancellationToken: _token);
-
-			var converter = new ChatEvent2EventConverter(dbEvents.id2User);
-
-			return dbEvents.Item2
+			return dbEvents
 				.Select(
 					item =>
 					{
-						item.Accept(converter);
+						converter.SetUser(item.User);
+						item.Event.Accept(converter);
 
 						if (converter.Event == null)
 							throw new InvalidOperationException($"unable to convert event with type {item.GetType()}");
@@ -94,31 +77,39 @@ namespace AspNetChat.DataBase.Mongo
 
 		private class ChatEvent2EventConverter : IUserChatEventVisitor
 		{
-			private readonly IReadOnlyDictionary<Guid, User> _id2UserData;
-
+			private User? _eventUser;
 			public IEvent? Event { get; private set; }
 
-			public ChatEvent2EventConverter(IReadOnlyDictionary<Guid, User> id2UserData) 
+			public void SetUser(User eventUser) 
 			{
-				_id2UserData = id2UserData ?? throw new ArgumentNullException(nameof(id2UserData));
+				_eventUser = eventUser ?? throw new ArgumentNullException(nameof(eventUser));
 			}
 
 			public void Visit(UserJoined joined)
 			{
-				if (!_id2UserData.TryGetValue(joined.UserId, out var userData))
-					throw new InvalidOperationException($"unable to find user with id {joined.UserId}");
+				CheckIDEquality(joined);
 
-				Event = new UserConnected(userData.Name, userData.Id, joined.Time);
+				Event = new UserConnected(_eventUser!.Name, _eventUser.Id, joined.Time);
 			}
 
 			public void Visit(UserSendMessage sendMessage)
 			{
+				CheckIDEquality(sendMessage);
+
 				Event = new Core.Entities.ChatModel.Events.UserSendMessage(sendMessage.EventId, sendMessage.Message, sendMessage.Time);
 			}
 
 			public void Visit(UserDisconnected disconnected)
 			{
+				CheckIDEquality(disconnected);
+
 				Event = new Core.Entities.ChatModel.Events.UserDisconnected(disconnected.EventId, disconnected.Time);
+			}
+
+			private void CheckIDEquality(BaseUserChatEvent @event) 
+			{
+				if (_eventUser == null || !@event.UserId.Equals(_eventUser.Id))
+					throw new InvalidOperationException("event and user id's not equal");
 			}
 		}
 
@@ -170,5 +161,7 @@ namespace AspNetChat.DataBase.Mongo
 				};
 			}
 		}
+
+		private record struct DBEvent(BaseUserChatEvent Event, User User);
 	}
 }

@@ -4,8 +4,6 @@
 <#@ import namespace="System.Text" #>
 <#@ import namespace="System.Collections.Generic" #>
 <#@ output extension=".cs" #>
-using AspNetChat.Core.Interfaces.Factories;
-
 namespace AspNetChat.Extensions.DI
 {
     public static partial class DIExtensions
@@ -25,7 +23,7 @@ namespace AspNetChat.Extensions.DI
 
 			public ResolveFactoryContract(IServiceProvider serviceProvider)
 			{
-				_serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(_serviceProvider));
+				_serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
 			}
 
 			public TContract Create(<#= string.Join(", ", Enumerable.Repeat(0, i).Select((_, i) => $"P{i} param{i}")) #>)

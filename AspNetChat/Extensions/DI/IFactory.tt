@@ -8,9 +8,9 @@ namespace AspNetChat.Extensions.DI
 {
 <# for (int i = 0; i <= 10; i++)
 { #>
-    public interface IFactory<<#= string.Join(", ", Enumerable.Repeat(0, i).Select((_, i) => $"P{i}")) #><#= i==0 ? "" : ", "#>T>
+    public interface IFactory<<#= string.Join(", ", Enumerable.Repeat(0, i).Select((_, j) => $"in P{j}")) #><#= i==0 ? "" : ", "#>out T>
     {
-        T Create(<#= string.Join(", ", Enumerable.Repeat(0, i).Select((_, i) => $"P{i} param{i}")) #>);
+        T Create(<#= string.Join(", ", Enumerable.Repeat(0, i).Select((_, j) => $"P{j} param{j}")) #>);
     }
 
 <# } #>

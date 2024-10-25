@@ -1,0 +1,25 @@
+<#@ template debug="false" hostspecific="false" language="C#" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="System.Linq" #>
+<#@ output extension=".cs" #>
+namespace AspNetChat.Extensions.DI
+{
+    public static partial class DIExtensions
+    {
+<# for (int i = 2; i <= 10; i++)
+{ #>
+        public static void AddSingleton<<#= string.Join(", ", Enumerable.Repeat(0, i).Select((_, j) => $"TService{j}")) #>, TInstance>(this IServiceCollection services)
+            where TInstance : class, <#= string.Join(", ", Enumerable.Repeat(0, i).Select((_, j) => $"TService{j}")) #>
+        {
+            services.AddSingleton<TInstance>();
+
+<# for (int j = 0; j < i; j++)
+{ #>
+            services.AddSingleton(typeof(TService<#= j#>), x => x.GetService<TInstance>()!);
+<# } #>
+        }
+
+<# } #>
+    }
+}
