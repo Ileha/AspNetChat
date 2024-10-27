@@ -3,7 +3,7 @@ using System.Security.Cryptography;
 using System.Text;
 using AspNetChat.Core.Interfaces;
 using AspNetChat.Core.Interfaces.Services.Storage;
-using AspNetChat.Extensions.DI;
+using Common.Extensions.DI;
 using static AspNetChat.Core.Interfaces.IChat;
 
 namespace AspNetChat.Core.Entities.ChatModel

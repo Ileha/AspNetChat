@@ -5,7 +5,7 @@ using AspNetChat.Core.Interfaces.ChatEvents;
 using AspNetChat.Core.Interfaces.Services;
 using AspNetChat.Core.Interfaces.Services.Storage;
 using AspNetChat.Extensions.Comparers;
-using AspNetChat.Extensions.DI;
+using Common.Extensions.DI;
 using static AspNetChat.Core.Interfaces.IChat;
 
 namespace AspNetChat.Core.Entities.ChatModel

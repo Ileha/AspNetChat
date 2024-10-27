@@ -1,4 +1,6 @@
-namespace AspNetChat.Extensions.DI
+using Microsoft.Extensions.DependencyInjection;
+
+namespace Common.Extensions.DI
 {
     public static partial class DIExtensions
     {

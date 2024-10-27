@@ -1,7 +1,7 @@
 ﻿using AspNetChat.Core.Interfaces;
 using AspNetChat.Core.Interfaces.Services.Storage;
 using AspNetChat.DataBase.Mongo.Entities;
-using AspNetChat.Extensions.DI;
+using Common.Extensions.DI;
 using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
 

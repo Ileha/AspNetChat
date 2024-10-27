@@ -15,37 +15,10 @@
     <Content Remove="Core\Factories\**" />
     <EmbeddedResource Remove="Core\Factories\**" />
     <None Remove="Core\Factories\**" />
-    <None Update="Extensions\DI\DIExtensionsSingletons.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>DIExtensionsSingletons.cs</LastGenOutput>
-    </None>
-    <Compile Update="Extensions\DI\DIExtensionsSingletons.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>DIExtensionsSingletons.tt</DependentUpon>
-    </Compile>
   </ItemGroup>
 
   <ItemGroup>
     <Content Include="Pages\Index.cshtml.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="Extensions\DI\IFactory.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>IFactory.tt</DependentUpon>
-    </None>
-    <None Include="Extensions\DI\DIExtensionsFactories.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>DIExtensionsFactories.tt</DependentUpon>
-    </None>
-    <None Include="Extensions\TaskExtensions.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>TaskExtensions.tt</DependentUpon>
-    </None>
   </ItemGroup>
 
   <ItemGroup>
@@ -56,40 +29,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Extensions\DI\IFactory.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>IFactory.cs</LastGenOutput>
-    </None>
-    <None Update="Extensions\DI\DIExtensionsFactories.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>DIExtensionsFactories.cs</LastGenOutput>
-    </None>
-    <None Update="Extensions\TaskExtensions.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>TaskExtensions.cs</LastGenOutput>
-    </None>
-  </ItemGroup>
-
-  <ItemGroup>
     <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="Extensions\DI\IFactory.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>IFactory.tt</DependentUpon>
-    </Compile>
-    <Compile Update="Extensions\DI\DIExtensionsFactories.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>DIExtensionsFactories.tt</DependentUpon>
-    </Compile>
-    <Compile Update="Extensions\TaskExtensions.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>TaskExtensions.tt</DependentUpon>
-    </Compile>
+    <ProjectReference Include="..\Common\Common.csproj" />
   </ItemGroup>
 
 </Project>

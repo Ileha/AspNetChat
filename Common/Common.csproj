@@ -1,0 +1,50 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <None Include="Extensions\DI\DIExtensionsFactories.cs" />
+      <None Include="Extensions\DI\IFactory.cs" />
+      <None Update="Extensions\DI\DIExtensionsFactories.tt">
+        <Generator>TextTemplatingFileGenerator</Generator>
+        <LastGenOutput>DIExtensionsFactories.cs</LastGenOutput>
+      </None>
+      <None Update="Extensions\DI\IFactory.tt">
+        <Generator>TextTemplatingFileGenerator</Generator>
+        <LastGenOutput>IFactory.cs</LastGenOutput>
+      </None>
+      <None Update="Extensions\DI\DIExtensionsSingletons.tt">
+        <Generator>TextTemplatingFileGenerator</Generator>
+        <LastGenOutput>DIExtensionsSingletons.cs</LastGenOutput>
+      </None>
+      <None Update="Extensions\TaskExtensions.tt">
+        <Generator>TextTemplatingFileGenerator</Generator>
+        <LastGenOutput>TaskExtensions.cs</LastGenOutput>
+      </None>
+      <None Include="Extensions\TaskExtensions.cs">
+        <DesignTime>True</DesignTime>
+        <AutoGen>True</AutoGen>
+        <DependentUpon>TaskExtensions.tt</DependentUpon>
+      </None>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Compile Update="Extensions\TaskExtensions.cs">
+        <DesignTime>True</DesignTime>
+        <AutoGen>True</AutoGen>
+        <DependentUpon>TaskExtensions.tt</DependentUpon>
+      </Compile>
+      <Compile Update="Extensions\DI\DIExtensionsSingletons.cs">
+        <DependentUpon>DIExtensionsSingletons.tt</DependentUpon>
+      </Compile>
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.1" />
+    </ItemGroup>
+
+</Project>

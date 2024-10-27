@@ -5,7 +5,6 @@ using AspNetChat.Core.Services;
 using AspNetChat.Core.Services.System;
 using AspNetChat.DataBase.Mongo;
 using AspNetChat.Extensions;
-using AspNetChat.Extensions.DI;
 using CommandLine;
 using Microsoft.AspNetCore.StaticFiles.Infrastructure;
 using Microsoft.Extensions.FileProviders;
@@ -13,6 +12,7 @@ using System.Net;
 using System.Text;
 using AspNetChat.Core.Entities.ChatModel;
 using AspNetChat.Core.Entities.ChatModel.Events;
+using Common.Extensions.DI;
 
 namespace AspNetChat
 {

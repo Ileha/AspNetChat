@@ -3,7 +3,7 @@ using AspNetChat.Core.Interfaces.ChatEvents;
 using AspNetChat.Core.Interfaces.Services.Storage;
 using AspNetChat.DataBase.Mongo.Entities;
 using AspNetChat.DataBase.Mongo.Inerfaces;
-using AspNetChat.Extensions.DI;
+using Common.Extensions.DI;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
 using UserConnectedMongo = AspNetChat.DataBase.Mongo.Entities.UserJoined;

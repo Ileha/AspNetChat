@@ -1,7 +1,7 @@
 ﻿using System.Net.WebSockets;
 using System.Text;
 
-namespace AspNetChat.Extensions
+namespace Common.Extensions
 {
     public static class WebSocketExtensions
     {
