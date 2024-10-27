@@ -1,7 +1,7 @@
 ﻿using AspNetChat.Core.Interfaces;
 using static AspNetChat.Core.Interfaces.IChatPartisipant;
 
-namespace AspNetChat.Core.Entities.Model
+namespace AspNetChat.Core.Entities.ChatModel
 {
     public class ChatParticipant : IChatPartisipant
     {

@@ -1,0 +1,14 @@
+services:
+  chat-database:
+    image: mongo:7.0
+    restart: 'always'
+    environment:
+      - 'MONGO_INITDB_ROOT_USERNAME=root'
+      - 'MONGO_INITDB_ROOT_PASSWORD=example'
+    volumes:
+      - asp-net-chat-data:/data/db
+    ports:
+      - "27017:27017"
+volumes:
+  asp-net-chat-data:
+    driver: local

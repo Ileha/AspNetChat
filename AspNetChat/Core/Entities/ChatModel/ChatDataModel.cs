@@ -1,12 +1,12 @@
-﻿using AspNetChat.Core.Interfaces;
-using AspNetChat.Core.Interfaces.Services.Storage;
-using AspNetChat.Extensions.DI;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Security.Cryptography;
 using System.Text;
+using AspNetChat.Core.Interfaces;
+using AspNetChat.Core.Interfaces.Services.Storage;
+using AspNetChat.Extensions.DI;
 using static AspNetChat.Core.Interfaces.IChat;
 
-namespace AspNetChat.Core.Entities.Model
+namespace AspNetChat.Core.Entities.ChatModel
 {
 	public class ChatDataModel : IChatContainer
     {

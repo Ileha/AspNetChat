@@ -11,18 +11,18 @@ namespace AspNetChat.Extensions
 	{
 <# for (int i = 2; i <= 10; i++)
 { #>
-		public static async Task<(<#= string.Join(" ,", Enumerable.Repeat(0, i).Select((_, i) => $"T{i}")) #>)> WhenAll<<#= string.Join(" ,", Enumerable.Repeat(0, i).Select((_, i) => $"T{i}")) #>>(<#= string.Join(" ,", Enumerable.Repeat(0, i).Select((_, i) => $"Task<T{i}> task{i}"))#>)
+		public static async Task<(<#= string.Join(" ,", Enumerable.Repeat(0, i).Select((_, j) => $"T{j}")) #>)> WhenAll<<#= string.Join(" ,", Enumerable.Repeat(0, i).Select((_, j) => $"T{j}")) #>>(<#= string.Join(" ,", Enumerable.Repeat(0, i).Select((_, j) => $"Task<T{j}> task{j}"))#>)
 		{
-			var data = new Data2Values<<#= string.Join(" ,", Enumerable.Repeat(0, i).Select((_, i) => $"T{i}")) #>>();
+			var data = new Data2Values<<#= string.Join(" ,", Enumerable.Repeat(0, i).Select((_, j) => $"T{j}")) #>>();
 
 			await Task.WhenAll(
-				<#= string.Join(",\r\n\t\t\t\t", Enumerable.Repeat(0, i).Select((_, i) => $"task{i}.ContinueWith(result => data.Item{i} = result.Result)"))#>
+				<#= string.Join(",\r\n\t\t\t\t", Enumerable.Repeat(0, i).Select((_, j) => $"task{j}.ContinueWith(result => data.Item{j} = result.Result)"))#>
 				);
 
-			return (<#= string.Join(" ,", Enumerable.Repeat(0, i).Select((_, i) => $"data.Item{i}")) #>);
+			return (<#= string.Join(" ,", Enumerable.Repeat(0, i).Select((_, j) => $"data.Item{j}")) #>);
 		}
 
-		private struct Data2Values<<#= string.Join(" ,", Enumerable.Repeat(0, i).Select((_, i) => $"T{i}")) #>>
+		private struct Data2Values<<#= string.Join(" ,", Enumerable.Repeat(0, i).Select((_, j) => $"T{j}")) #>>
 		{
 <# for (int j = 0; j < i; j++)
 { #>

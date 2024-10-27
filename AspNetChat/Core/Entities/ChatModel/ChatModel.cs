@@ -1,29 +1,39 @@
-﻿using AspNetChat.Core.Entities.ChatModel.Events;
+﻿using System.Collections.Concurrent;
+using AspNetChat.Core.Entities.ChatModel.Events;
 using AspNetChat.Core.Interfaces;
 using AspNetChat.Core.Interfaces.ChatEvents;
 using AspNetChat.Core.Interfaces.Services;
 using AspNetChat.Core.Interfaces.Services.Storage;
 using AspNetChat.Extensions.Comparers;
-using System.Collections.Concurrent;
+using AspNetChat.Extensions.DI;
 using static AspNetChat.Core.Interfaces.IChat;
 
-namespace AspNetChat.Core.Entities.Model
+namespace AspNetChat.Core.Entities.ChatModel
 {
     public class ChatModel : IChat
     {
         public Guid Id => _chatParams.Guid;
 
-        private readonly ConcurrentDictionary<IIdentifiable, byte> _participants = new ConcurrentDictionary<IIdentifiable, byte>(new IdentifiableEqualityComparer());
-		private readonly ChatParams _chatParams;
+        private readonly ConcurrentDictionary<IIdentifiable, byte> _participants = new(new IdentifiableEqualityComparer());
+        private readonly IFactory<UserConnected.NewParams, UserConnected> _userConnectedFactory;
+        private readonly IFactory<UserSendMessage.NewParams, UserSendMessage> _userSendMessageFactory;
+        private readonly IFactory<UserDisconnected.NewParams, UserDisconnected> _userDisconnected;
+        private readonly ChatParams _chatParams;
 		private readonly IMessageConsumerService _messageConsumerService;
 		private readonly IUserStorage _userStorage;
 
 		public ChatModel(
+			IFactory<UserConnected.NewParams, UserConnected> userConnectedFactory,
+			IFactory<UserSendMessage.NewParams, UserSendMessage> userSendMessageFactory,
+			IFactory<UserDisconnected.NewParams, UserDisconnected> userDisconnected,
 			ChatParams chatParams,
             IMessageConsumerService messageConsumerService, 
             IUserStorage userStorage)
         {
-			_chatParams = chatParams ?? throw new ArgumentNullException(nameof(chatParams));
+	        _userConnectedFactory = userConnectedFactory ?? throw new ArgumentNullException(nameof(userConnectedFactory));
+	        _userSendMessageFactory = userSendMessageFactory ?? throw new ArgumentNullException(nameof(userSendMessageFactory));
+	        _userDisconnected = userDisconnected ?? throw new ArgumentNullException(nameof(userDisconnected));
+	        _chatParams = chatParams ?? throw new ArgumentNullException(nameof(chatParams));
 			_messageConsumerService = messageConsumerService ?? throw new ArgumentNullException(nameof(messageConsumerService));
 			_userStorage = userStorage ?? throw new ArgumentNullException(nameof(userStorage));
 		}
@@ -40,7 +50,12 @@ namespace AspNetChat.Core.Entities.Model
             if (!_participants.TryAdd(realParticipant, 0))
 				throw new InvalidOperationException($"chat already has participant with {realParticipant.Id}");
 
-            await _chatParams.ChatStorage.AddEvent(new UserConnected(realParticipant.Name, realParticipant.Id, GetTime()));
+            var @event = _userConnectedFactory.Create(
+	            new UserConnected.NewParams(
+		            realParticipant.Id, 
+		            realParticipant.Name,
+		            GetTime()));
+            await _chatParams.ChatStorage.AddEvent(@event);
 
             PostEvents();
 
@@ -52,7 +67,8 @@ namespace AspNetChat.Core.Entities.Model
             if (!_participants.ContainsKey(partisipant))
 				throw new InvalidOperationException($"chat don't have participant with {partisipant.Id}");
 
-            await _chatParams.ChatStorage.AddEvent(new UserSendMessage(partisipant.Id, message, GetTime()));
+            var @event = _userSendMessageFactory.Create(new UserSendMessage.NewParams(partisipant.Id, message, GetTime()));
+            await _chatParams.ChatStorage.AddEvent(@event);
 
             PostEvents();
 		}
@@ -62,7 +78,8 @@ namespace AspNetChat.Core.Entities.Model
             if (!_participants.TryRemove(partisipant, out _))
 				throw new InvalidOperationException($"chat don't have participant with {partisipant.Id}");
 
-            await _chatParams.ChatStorage.AddEvent(new UserDisconnected(partisipant.Id, GetTime()));
+            var @event = _userDisconnected.Create(new UserDisconnected.NewParams(partisipant.Id, GetTime()));
+            await _chatParams.ChatStorage.AddEvent(@event);
 
 			PostEvents();
 		}

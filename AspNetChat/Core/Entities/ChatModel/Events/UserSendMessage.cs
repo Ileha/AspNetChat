@@ -5,24 +5,29 @@ namespace AspNetChat.Core.Entities.ChatModel.Events
 {
     public class UserSendMessage : IUserSendMessage
 	{
-        private readonly Guid _guid;
-        private readonly string _message;
-
         public DateTime DateTime { get; }
 
-		public IIdentifiable User => (Identifiable) _guid;
+        public IIdentifiable User { get; }
 
-		public string Message => _message;
+        public string Message { get; }
 
-		public Guid Id { get; }
+        public Guid Id { get; }
 
-		public UserSendMessage(Guid guid, string message, DateTime dateTime)
+        public UserSendMessage(NewParams newParams)
         {
-            _guid = guid;
-            _message = message ?? throw new ArgumentNullException(nameof(message));
-            DateTime = dateTime;
-			Id = Guid.NewGuid();
-		}
+            Message = newParams.Message ?? throw new ArgumentNullException(nameof(newParams.Message));
+            User = (Identifiable) newParams.UserId;
+            DateTime = newParams.DateTime;
+            Id = Guid.NewGuid();
+        }
+
+        public UserSendMessage(Params @params)
+        {
+            Message = @params.Message ?? throw new ArgumentNullException(nameof(@params.Message));
+            User = (Identifiable) @params.UserId;
+            DateTime = @params.DateTime;
+            Id = @params.EventId;
+        }
 
         void IEvent.Accept(IEventVisitor eventVisitor)
         {
@@ -31,5 +36,8 @@ namespace AspNetChat.Core.Entities.ChatModel.Events
 
             eventVisitor.Visit(this);
         }
+
+        public record NewParams(Guid UserId, string Message, DateTime DateTime);
+        public record Params(Guid EventId, Guid UserId, string Message, DateTime DateTime);
     }
 }

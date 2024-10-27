@@ -5,20 +5,25 @@ namespace AspNetChat.Core.Entities.ChatModel.Events
 {
     public class UserDisconnected : IUserDisconnected
 	{
-        private readonly Guid _guid;
-
         public DateTime DateTime { get; }
 
-		public IIdentifiable User => (Identifiable) _guid;
+        public IIdentifiable User { get; }
 
-		public Guid Id { get; }
+        public Guid Id { get; }
 
-		public UserDisconnected(Guid guid, DateTime dateTime)
+		public UserDisconnected(NewParams newParams)
         {
-            _guid = guid;
-            DateTime = dateTime;
+            User = (Identifiable) newParams.UserId;
+            DateTime = newParams.DateTime;
 			Id = Guid.NewGuid();
 		}
+
+        public UserDisconnected(Params @params)
+        {
+            User = (Identifiable) @params.UserId;
+            DateTime = @params.DateTime;
+            Id = @params.EventId;
+        }
 
         void IEvent.Accept(IEventVisitor eventVisitor)
         {
@@ -27,5 +32,8 @@ namespace AspNetChat.Core.Entities.ChatModel.Events
 
             eventVisitor.Visit(this);
         }
+        
+        public record NewParams(Guid UserId, DateTime DateTime);
+        public record Params(Guid EventId, Guid UserId, DateTime DateTime);
     }
 }

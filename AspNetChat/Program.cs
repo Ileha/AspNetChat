@@ -1,5 +1,4 @@
 using AspNetChat.Core.Entities;
-using AspNetChat.Core.Entities.Model;
 using AspNetChat.Core.Interfaces;
 using AspNetChat.Core.Interfaces.Services;
 using AspNetChat.Core.Services;
@@ -12,6 +11,8 @@ using Microsoft.AspNetCore.StaticFiles.Infrastructure;
 using Microsoft.Extensions.FileProviders;
 using System.Net;
 using System.Text;
+using AspNetChat.Core.Entities.ChatModel;
+using AspNetChat.Core.Entities.ChatModel.Events;
 
 namespace AspNetChat
 {
@@ -61,7 +62,7 @@ namespace AspNetChat
 				sb.AppendLine(item);
 			}
 
-			Console.WriteLine($"loaded jsons:\n{sb.ToString()}");
+			Console.WriteLine($"loaded jsons:\n{sb}");
 		}
 
 		private static void SetStaticFilesLocation(WebApplication app, Options options) 
@@ -101,6 +102,13 @@ namespace AspNetChat
 			builder.Services.BindSingletonInterfacesTo<DisconnectionService>();
 			builder.Services.BindSingletonInterfacesTo<MessageReceiverService>();
 			builder.Services.AddSingleton<ChatEventComposer>();
+			
+			builder.Services.AddFactory<UserConnected.Params, UserConnected>();
+			builder.Services.AddFactory<UserConnected.NewParams, UserConnected>();
+			builder.Services.AddFactory<UserDisconnected.Params, UserDisconnected>();
+			builder.Services.AddFactory<UserDisconnected.NewParams, UserDisconnected>();
+			builder.Services.AddFactory<UserSendMessage.Params, UserSendMessage>();
+			builder.Services.AddFactory<UserSendMessage.NewParams, UserSendMessage>();
 
 			var dbConnection = options.DataBaseConnection.ToArray();
 			new MongoInstaller(builder.Services, dbConnection[0], dbConnection[1]).Install();

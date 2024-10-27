@@ -9,13 +9,16 @@ namespace AspNetChat.DataBase.Mongo
 {
     public class MongoInstaller
     {
-		private readonly IServiceCollection _services;
+	    private readonly IServiceCollection _services;
 		private readonly string _connectionString;
 		private readonly string _databaseName;
 
-		public MongoInstaller(IServiceCollection services, string connectionString, string databaseName) 
+		public MongoInstaller(
+			IServiceCollection services, 
+			string? connectionString, 
+			string? databaseName) 
         {
-			_services = services ?? throw new ArgumentNullException(nameof(services));
+	        _services = services ?? throw new ArgumentNullException(nameof(services));
 			_connectionString = connectionString ?? throw new ArgumentNullException(nameof(connectionString));
 			_databaseName = databaseName ?? throw new ArgumentNullException(nameof(databaseName));
 		}
@@ -30,12 +33,12 @@ namespace AspNetChat.DataBase.Mongo
 			_services.BindSingletonInterfacesTo<MongoDataBaseService>(_connectionString, _databaseName);
 			_services.AddFactoryTo<
 				IIdentifiable,
-				IMongoClient,
 				IMongoCollection<BaseUserChatEvent>,
 				IMongoCollection<User>,
 				CancellationToken,
 				IChatStorage,
 				MongoChatStorage>();
+			_services.AddFactory<MongoChatStorage.ChatEvent2EventConverter>();
 		}
     }
 }

@@ -1,10 +1,8 @@
-﻿using AspNetChat.Core.Entities.ChatModel.Events;
-using AspNetChat.Core.Interfaces;
+﻿using AspNetChat.Core.Interfaces;
 using AspNetChat.Core.Interfaces.ChatEvents;
 using AspNetChat.Extensions.Comparers;
 using AspNetChat.Extensions.Converters;
 using Newtonsoft.Json;
-using static AspNetChat.Core.Services.ChatEventComposer;
 
 namespace AspNetChat.Core.Services
 {
@@ -12,15 +10,15 @@ namespace AspNetChat.Core.Services
     {
         public IEnumerable<BaseUserEvent> GetEvents(IReadOnlyList<IEvent> events)
         {
-            var visiter = new MessageCollector();
+            var visitor = new MessageCollector();
 
             foreach (var @event in events)
             {
-                visiter.Clear();
+                visitor.Clear();
 
-                @event.Accept(visiter);
+                @event.Accept(visitor);
 
-                yield return visiter.UserEvent!;
+                yield return visitor.UserEvent!;
             }
         }
 
@@ -66,12 +64,10 @@ namespace AspNetChat.Core.Services
         
         }
 
-
 		private class MessageCollector : IEventVisitor
         {
-            private readonly Dictionary<string, int> _nameAmount = new Dictionary<string, int>();
-            private readonly Dictionary<IIdentifiable, UserData> _id2Name = 
-                new Dictionary<IIdentifiable, UserData>(new IdentifiableEqualityComparer());
+            private readonly Dictionary<string, int> _nameAmount = new();
+            private readonly Dictionary<IIdentifiable, UserData> _id2Name = new(new IdentifiableEqualityComparer());
 
             public BaseUserEvent? UserEvent { get; private set; }
 
@@ -81,7 +77,6 @@ namespace AspNetChat.Core.Services
 
                 if (!TryGetMappedName(userConnected.User, out var mappedName))
                     throw new InvalidOperationException($"unable to find mapped name for user with if {userConnected.User.Id}");
-
 
 				UserEvent = new UserJoined()
                 {
@@ -136,7 +131,7 @@ namespace AspNetChat.Core.Services
             private void AddUser(IIdentifiable user, string name) 
             {
                 if (_id2Name.ContainsKey(user))
-                    throw new InvalidOperationException($"name {name} already assigned for user with id {user.Id}");
+                    return;
 
                 var userAmount = GetNameAmount(name);
 
@@ -146,25 +141,17 @@ namespace AspNetChat.Core.Services
 
             private void AddNameAmount(string name, int amount) 
             {
-                if (!_nameAmount.TryGetValue(name, out var currentAmount)) 
-                {
-                    currentAmount = 0;
-				}
+                var currentAmount = _nameAmount.GetValueOrDefault(name, 0);
 
                 currentAmount += amount;
 
                 _nameAmount[name] = currentAmount;
             }
 
-            private int GetNameAmount(string name) 
+            private int GetNameAmount(string name)
             {
-				if (!_nameAmount.TryGetValue(name, out var currentAmount))
-				{
-					return 0;
-				}
-
-				return currentAmount;
-			}
+	            return _nameAmount.GetValueOrDefault(name, 0);
+            }
 
             private record UserData(string OriginalName, string MappedName);
         }

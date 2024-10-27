@@ -1,33 +1,37 @@
-﻿using AspNetChat.Core.Entities.ChatModel.Events;
-using AspNetChat.Core.Interfaces;
+﻿using AspNetChat.Core.Interfaces;
 using AspNetChat.Core.Interfaces.ChatEvents;
 using AspNetChat.Core.Interfaces.Services.Storage;
 using AspNetChat.DataBase.Mongo.Entities;
 using AspNetChat.DataBase.Mongo.Inerfaces;
+using AspNetChat.Extensions.DI;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
-using UserDisconnected = AspNetChat.DataBase.Mongo.Entities.UserDisconnected;
-using UserSendMessage = AspNetChat.DataBase.Mongo.Entities.UserSendMessage;
+using UserConnectedMongo = AspNetChat.DataBase.Mongo.Entities.UserJoined;
+using UserDisconnectedMongo = AspNetChat.DataBase.Mongo.Entities.UserDisconnected;
+using UserSendMessageMongo = AspNetChat.DataBase.Mongo.Entities.UserSendMessage;
+using UserConnected = AspNetChat.Core.Entities.ChatModel.Events.UserConnected;
+using UserDisconnected = AspNetChat.Core.Entities.ChatModel.Events.UserDisconnected;
+using UserSendMessage = AspNetChat.Core.Entities.ChatModel.Events.UserSendMessage;
 
 namespace AspNetChat.DataBase.Mongo
 {
 	internal class MongoChatStorage : IChatStorage
 	{
+		private readonly IFactory<ChatEvent2EventConverter> _chatEvent2EventConverterFactory;
 		private readonly IIdentifiable _chat;
-		private readonly IMongoClient _client;
 		private readonly IMongoCollection<BaseUserChatEvent> _chatCollection;
 		private readonly IMongoCollection<User> _userCollection;
 		private readonly CancellationToken _token;
 
 		public MongoChatStorage(
+			IFactory<ChatEvent2EventConverter> chatEvent2EventConverterFactory,
 			IIdentifiable chat,
-			IMongoClient client, 
 			IMongoCollection<BaseUserChatEvent> chatCollection,
 			IMongoCollection<User> userCollection, 
 			CancellationToken token) 
 		{
+			_chatEvent2EventConverterFactory = chatEvent2EventConverterFactory ?? throw new ArgumentNullException(nameof(chatEvent2EventConverterFactory));
 			_chat = chat ?? throw new ArgumentNullException(nameof(chat));
-			_client = client ?? throw new ArgumentNullException(nameof(client));
 			_chatCollection = chatCollection ?? throw new ArgumentNullException(nameof(chatCollection));
 			_userCollection = userCollection ?? throw new ArgumentNullException(nameof(userCollection));
 			_token = token;
@@ -57,9 +61,9 @@ namespace AspNetChat.DataBase.Mongo
 					user => user.Id,
 					(@event, user) => new DBEvent(@event, user)
 				)
-				.ToListAsync();
+				.ToListAsync(cancellationToken: _token);
 
-			var converter = new ChatEvent2EventConverter();
+			var converter = _chatEvent2EventConverterFactory.Create();
 
 			return dbEvents
 				.Select(
@@ -75,35 +79,59 @@ namespace AspNetChat.DataBase.Mongo
 					});
 		}
 
-		private class ChatEvent2EventConverter : IUserChatEventVisitor
+		public class ChatEvent2EventConverter : IUserChatEventVisitor
 		{
+			private readonly IFactory<UserConnected.Params, UserConnected> _userConnectedFactory;
+			private readonly IFactory<UserSendMessage.Params,UserSendMessage> _userSendMessageFactory;
+			private readonly IFactory<UserDisconnected.Params, UserDisconnected> _userDisconnected;
 			private User? _eventUser;
 			public IEvent? Event { get; private set; }
+
+			public ChatEvent2EventConverter(
+				IFactory<UserConnected.Params, UserConnected> userConnectedFactory,
+				IFactory<UserSendMessage.Params, UserSendMessage> userSendMessageFactory,
+				IFactory<UserDisconnected.Params, UserDisconnected> userDisconnected
+				)
+			{
+				_userConnectedFactory = userConnectedFactory ?? throw new ArgumentNullException(nameof(userConnectedFactory));
+				_userSendMessageFactory = userSendMessageFactory ?? throw new ArgumentNullException(nameof(userSendMessageFactory));
+				_userDisconnected = userDisconnected ?? throw new ArgumentNullException(nameof(userDisconnected));
+			}
 
 			public void SetUser(User eventUser) 
 			{
 				_eventUser = eventUser ?? throw new ArgumentNullException(nameof(eventUser));
 			}
 
-			public void Visit(UserJoined joined)
+			public void Visit(UserConnectedMongo joined)
 			{
 				CheckIDEquality(joined);
 
-				Event = new UserConnected(_eventUser!.Name, _eventUser.Id, joined.Time);
+				Event = _userConnectedFactory.Create(
+					new UserConnected.Params(
+						joined.EventId, 
+						joined.UserId, 
+						_eventUser!.Name, 
+						joined.Time));
 			}
 
-			public void Visit(UserSendMessage sendMessage)
+			public void Visit(UserSendMessageMongo sendMessage)
 			{
 				CheckIDEquality(sendMessage);
-
-				Event = new Core.Entities.ChatModel.Events.UserSendMessage(sendMessage.EventId, sendMessage.Message, sendMessage.Time);
+				
+				Event = _userSendMessageFactory.Create(
+					new UserSendMessage.Params(
+						sendMessage.EventId, 
+						sendMessage.UserId, 
+						sendMessage.Message,
+						sendMessage.Time));
 			}
 
-			public void Visit(UserDisconnected disconnected)
+			public void Visit(UserDisconnectedMongo disconnected)
 			{
 				CheckIDEquality(disconnected);
 
-				Event = new Core.Entities.ChatModel.Events.UserDisconnected(disconnected.EventId, disconnected.Time);
+				Event = _userDisconnected.Create(new UserDisconnected.Params(disconnected.EventId, disconnected.UserId, disconnected.Time));
 			}
 
 			private void CheckIDEquality(BaseUserChatEvent @event) 
@@ -126,7 +154,7 @@ namespace AspNetChat.DataBase.Mongo
 
 			public void Visit(IUserConnected userConnected)
 			{
-				ChatEvent = new UserJoined()
+				ChatEvent = new UserConnectedMongo()
 				{
 					ChatId = _chat.Id,
 					UserId = userConnected.User.Id,
@@ -138,11 +166,11 @@ namespace AspNetChat.DataBase.Mongo
 
 			public void Visit(IUserSendMessage userSendMessage)
 			{
-				ChatEvent = new UserSendMessage()
+				ChatEvent = new UserSendMessageMongo()
 				{
 					ChatId = _chat.Id,
 					UserId = userSendMessage.User.Id,
-					EventType = UserEventType.Joined,
+					EventType = UserEventType.Message,
 					Time = userSendMessage.DateTime,
 					EventId = userSendMessage.Id,
 					Message = userSendMessage.Message,
@@ -151,11 +179,11 @@ namespace AspNetChat.DataBase.Mongo
 
 			public void Visit(IUserDisconnected userDisconnected)
 			{
-				ChatEvent = new UserDisconnected()
+				ChatEvent = new UserDisconnectedMongo()
 				{
 					ChatId = _chat.Id,
 					UserId = userDisconnected.User.Id,
-					EventType = UserEventType.Joined,
+					EventType = UserEventType.Disconnected,
 					Time = userDisconnected.DateTime,
 					EventId = userDisconnected.Id,
 				};
