@@ -1,4 +1,4 @@
-﻿using AspNetChat.Core.Interfaces.System;
+﻿using Common.Interfaces;
 
 namespace AspNetChat.Core.Services.System
 {

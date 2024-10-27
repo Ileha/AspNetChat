@@ -9,6 +9,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CertificateBuilder", "..\Ce
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common", "..\Common\Common.csproj", "{DA1E8B12-BC47-4136-8398-9C8074798644}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mongo", "..\Mongo\Mongo.csproj", "{35775AB8-2A3A-46CC-8454-BDBF5D42D09A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chat", "..\Chat\Chat.csproj", "{4D6ED38B-7087-4F04-8F97-4EEC267FF361}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +31,14 @@ Global
 		{DA1E8B12-BC47-4136-8398-9C8074798644}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DA1E8B12-BC47-4136-8398-9C8074798644}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DA1E8B12-BC47-4136-8398-9C8074798644}.Release|Any CPU.Build.0 = Release|Any CPU
+		{35775AB8-2A3A-46CC-8454-BDBF5D42D09A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{35775AB8-2A3A-46CC-8454-BDBF5D42D09A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{35775AB8-2A3A-46CC-8454-BDBF5D42D09A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{35775AB8-2A3A-46CC-8454-BDBF5D42D09A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4D6ED38B-7087-4F04-8F97-4EEC267FF361}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4D6ED38B-7087-4F04-8F97-4EEC267FF361}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4D6ED38B-7087-4F04-8F97-4EEC267FF361}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4D6ED38B-7087-4F04-8F97-4EEC267FF361}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
