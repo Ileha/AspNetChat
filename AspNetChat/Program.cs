@@ -5,8 +5,10 @@ using Microsoft.AspNetCore.StaticFiles.Infrastructure;
 using Microsoft.Extensions.FileProviders;
 using System.Net;
 using System.Text;
+using AspNetChat.Core.Services;
 using Chat;
 using Chat.Interfaces.Services;
+using Common.Extensions.DI;
 using Mongo;
 
 namespace AspNetChat
@@ -187,13 +189,12 @@ namespace AspNetChat
 
 			app.MapRazorPages();
 
-			app.Services.GetService<InitializeService>()?.Initialize();
-
-			var disposeService = app.Services.GetService<DisposeService>();
-
-			app.Run();
-
-			disposeService?.Dispose();
+			var appDecoratorFactory = app.Services.GetService<IFactory<WebApplication, App>>()!;
+			using var appDecorator = appDecoratorFactory.Create(app);
+				
+			appDecorator.Initialize();
+				
+			appDecorator.Run();
 		}
 	}
 }
