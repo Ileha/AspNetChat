@@ -7,7 +7,6 @@ using System.Net;
 using System.Text;
 using Chat;
 using Chat.Interfaces.Services;
-using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Mongo;
 
 namespace AspNetChat
@@ -95,15 +94,7 @@ namespace AspNetChat
 			new MongoInstaller(builder.Services, dbConnection[0], dbConnection[1]).Install();
 
 			// Add services to the container.
-			var assembly = typeof(ChatInstaller).Assembly;
-			// This creates an AssemblyPart, but does not create any related parts for items such as views.
-			var part = new AssemblyPart(assembly);
-			
-			builder.Services
-				.AddRazorPages()
-				.ConfigureApplicationPartManager(apm => apm.ApplicationParts.Add(part))
-				// .AddApplicationPart(typeof(ChatInstaller).Assembly)
-				;
+			builder.Services.AddRazorPages();
 			
 			ConfigureHttpsCertificates(builder, options);
 
@@ -149,18 +140,18 @@ namespace AspNetChat
 			//	app.UseMiddleware<MessageListPublisherService>();
 			//});
 			//         app.UseWhen(
-			//context => context.Request.Path == "/time", // åñëè ïóòü çàïðîñà "/time"
+			//context => context.Request.Path == "/time", // ÐµÑÐ»Ð¸ Ð¿ÑƒÑ‚ÑŒ Ð·Ð°Ð¿Ñ€Ð¾ÑÐ° "/time"
 			//appBuilder =>
 			//{
-			//	// ëîããèðóåì äàííûå - âûâîäèì íà êîíñîëü ïðèëîæåíèÿ
+			//	// Ð»Ð¾Ð³Ð³Ð¸Ñ€ÑƒÐµÐ¼ Ð´Ð°Ð½Ð½Ñ‹Ðµ - Ð²Ñ‹Ð²Ð¾Ð´Ð¸Ð¼ Ð½Ð° ÐºÐ¾Ð½ÑÐ¾Ð»ÑŒ Ð¿Ñ€Ð¸Ð»Ð¾Ð¶ÐµÐ½Ð¸Ñ
 			//	appBuilder.Use(async (context, next) =>
 			//	{
 			//		var time = DateTime.Now.ToShortTimeString();
 			//		Console.WriteLine($"Time: {time}");
-			//		await next();   // âûçûâàåì ñëåäóþùèé middleware
+			//		await next();   // Ð²Ñ‹Ð·Ñ‹Ð²Ð°ÐµÐ¼ ÑÐ»ÐµÐ´ÑƒÑŽÑ‰Ð¸Ð¹ middleware
 			//	});
 
-			//	// îòïðàâëÿåì îòâåò
+			//	// Ð¾Ñ‚Ð¿Ñ€Ð°Ð²Ð»ÑÐµÐ¼ Ð¾Ñ‚Ð²ÐµÑ‚
 			//	appBuilder.Run(async context =>
 			//	{
 			//		var time = DateTime.Now.ToShortTimeString();
