@@ -7,6 +7,7 @@ using System.Net;
 using System.Text;
 using Chat;
 using Chat.Interfaces.Services;
+using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Mongo;
 
 namespace AspNetChat
@@ -29,10 +30,10 @@ namespace AspNetChat
 			if (httpsSettings == null)
 				throw new InvalidOperationException("unable to get https certificate configuration");
 
-			builder.WebHost.UseKestrel(options =>
+			builder.WebHost.UseKestrel(kestrelServerOptions =>
 			{
-				options.Listen(IPAddress.Any, 8080);
-				options.Listen(IPAddress.Any, 8081, listenOptions =>
+				kestrelServerOptions.Listen(IPAddress.Any, 8080);
+				kestrelServerOptions.Listen(IPAddress.Any, 8081, listenOptions =>
 				{
 					listenOptions.UseHttps(httpsSettings.GetCertificate());
 				});
@@ -86,8 +87,7 @@ namespace AspNetChat
 
 			LoadJsons(builder, options);
 
-			builder.Services.AddSingleton<DisposeService>();
-			builder.Services.AddSingleton<InitializeService>();
+			new MainInstaller(builder.Services).Install();
 
 			new ChatInstaller(builder.Services).Install();
 
@@ -95,8 +95,16 @@ namespace AspNetChat
 			new MongoInstaller(builder.Services, dbConnection[0], dbConnection[1]).Install();
 
 			// Add services to the container.
-			builder.Services.AddRazorPages();
-
+			var assembly = typeof(ChatInstaller).Assembly;
+			// This creates an AssemblyPart, but does not create any related parts for items such as views.
+			var part = new AssemblyPart(assembly);
+			
+			builder.Services
+				.AddRazorPages()
+				.ConfigureApplicationPartManager(apm => apm.ApplicationParts.Add(part))
+				// .AddApplicationPart(typeof(ChatInstaller).Assembly)
+				;
+			
 			ConfigureHttpsCertificates(builder, options);
 
 			var app = builder.Build();
@@ -111,36 +119,35 @@ namespace AspNetChat
 
 			app.UseWebSockets();
 
-			app.Map("/ChatHandler/{chatID}",
-				async (string chatID, string userID, HttpContext context, IMessageListPublisherService messageListPublisherService) =>
+			app.Map("/ChatHandler/{chatId}",
+				async (string chatId, string userId, HttpContext context, IMessageListPublisherService messageListPublisherService) =>
 				{
-					await messageListPublisherService.ConnectWebSocket(userID, chatID, context);
+					await messageListPublisherService.ConnectWebSocket(userId, chatId, context);
 				});
 
-			app.MapPost("/UserDisconnected/{chatID}",
-				async (string chatID, string userID, HttpContext context, IDisconnectionService disconnectionService) =>
+			app.MapPost("/UserDisconnected/{chatId}",
+				async (string chatId, string userId, HttpContext context, IDisconnectionService disconnectionService) =>
 				{
-					await disconnectionService.DisconnectUser(userID, chatID, context);
+					await disconnectionService.DisconnectUser(userId, chatId, context);
 				});
 
-			app.MapPost("/UserSendMessage/{chatID}",
+			app.MapPost("/UserSendMessage/{chatId}",
 				async (
-					string chatID,
-					string userID,
+					string chatId,
+					string userId,
 					string message,
 					HttpContext context,
 					IMessageReceiverService messageReceiverService) =>
 				{
-					await messageReceiverService.ReceiveMessage(userID, chatID, message, context);
+					await messageReceiverService.ReceiveMessage(userId, chatId, message, context);
 				});
 
+			#region test
+			
 			//app.Map(new PathString("/test/{data}"), (IApplicationBuilder app) =>
 			//{
 			//	app.UseMiddleware<MessageListPublisherService>();
 			//});
-
-			#region test
-
 			//         app.UseWhen(
 			//context => context.Request.Path == "/time", // если путь запроса "/time"
 			//appBuilder =>
@@ -179,7 +186,6 @@ namespace AspNetChat
 			//app.Map("map4/{*info}", (string? info) => $"map4 info: {info ?? "n/a"}");
 
 			#endregion
-
 
 			app.UseHttpsRedirection();
 			SetStaticFilesLocation(app, options);

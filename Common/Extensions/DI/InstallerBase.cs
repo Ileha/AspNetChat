@@ -6,8 +6,8 @@ namespace Common.Extensions.DI;
 public abstract class InstallerBase : IInstaller
 {
     protected readonly IServiceCollection Services;
-    
-    public InstallerBase(IServiceCollection services)
+
+    protected InstallerBase(IServiceCollection services)
     {
         Services = services ?? throw new ArgumentNullException(nameof(services));
     }
