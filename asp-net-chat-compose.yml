@@ -12,7 +12,7 @@
     depends_on:
       - chat-database
     environment:
-      - 'CHAT_ARGS=--customHttps -j /app/usersecrets/secrets.json --staticFiles /app/wwwroot --db mongodb://root:example@chat-database:27017 ChatDB'
+      - 'CHAT_ARGS=--useKestrel --customHttps --httpsPort 8081 --httpPort 8080 -j /app/usersecrets/secrets.json --staticFiles /app/wwwroot --db mongodb://root:example@chat-database:27017 ChatDB'
   chat-database:
     image: mongo:7.0
     restart: 'always'
@@ -21,8 +21,11 @@
       - 'MONGO_INITDB_ROOT_PASSWORD=example'
     volumes:
       - asp-net-chat-data:/data/db
+      - mongo-config:/data/configdb
     ports:
       - "27017:27017"
 volumes:
   asp-net-chat-data:
+    driver: local
+  mongo-config:
     driver: local

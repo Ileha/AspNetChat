@@ -1,5 +1,4 @@
 using AspNetChat.Core.Entities;
-using AspNetChat.Core.Services.System;
 using CommandLine;
 using Microsoft.AspNetCore.StaticFiles.Infrastructure;
 using Microsoft.Extensions.FileProviders;
@@ -23,18 +22,22 @@ namespace AspNetChat
 
 		private static void ConfigureHttpsCertificates(WebApplicationBuilder builder, Options options) 
 		{
-			if (!options.CustomHttpsCertificate)
+			if (!options.UseKestrel)
 				return;
-
-			var httpsSettings = builder.Configuration.GetSection("Https").Get<HttpsCertificateSettings>();
-
-			if (httpsSettings == null)
-				throw new InvalidOperationException("unable to get https certificate configuration");
-
+			
 			builder.WebHost.UseKestrel(kestrelServerOptions =>
 			{
-				kestrelServerOptions.Listen(IPAddress.Any, 8080);
-				kestrelServerOptions.Listen(IPAddress.Any, 8081, listenOptions =>
+				kestrelServerOptions.Listen(IPAddress.Any, options.HttpPort ?? Constants.Ports.HttpPort);
+				
+				if (!options.CustomHttpsCertificate)
+					return;
+				
+				var httpsSettings = builder.Configuration.GetSection("Https").Get<HttpsCertificateSettings>();
+
+				if (httpsSettings == null)
+					throw new InvalidOperationException("unable to get https certificate configuration");
+				
+				kestrelServerOptions.Listen(IPAddress.Any, options.HttpsPort ?? Constants.Ports.HttpsPort, listenOptions =>
 				{
 					listenOptions.UseHttps(httpsSettings.GetCertificate());
 				});
