@@ -26,8 +26,10 @@ namespace Mongo
 	        // var mongoDBSettings = builder.Configuration.GetSection("MongoDBSettings").Get<MongoDBSettings>();
 	        // Services.Configure<MongoDBSettings>(builder.Configuration.GetSection("MongoDBSettings"));
 
-	        Services.AddDbContext<EntityFrameworkDbContext>(options =>
-		        options.UseMongoDB(_connectionString, _databaseName));
+	        Services.AddDbContext<EntityFrameworkDbContext>(
+		        options => options.UseMongoDB(_connectionString, _databaseName), 
+		        ServiceLifetime.Singleton, 
+		        ServiceLifetime.Singleton);
 
 	        Services.BindSingletonInterfacesTo<EntityFrameworkController>();
 	        

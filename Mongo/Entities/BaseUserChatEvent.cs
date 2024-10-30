@@ -1,4 +1,6 @@
-﻿using Mongo.Inerfaces;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using Mongo.Inerfaces;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
@@ -13,16 +15,19 @@ namespace Mongo.Entities
 
 	public abstract class BaseUserChatEvent
 	{
+		// [BsonId]
+		// [BsonGuidRepresentation(GuidRepresentation.Standard)]
+		[Key]
 		[BsonId]
-		[BsonGuidRepresentation(GuidRepresentation.Standard)]
+		[DatabaseGenerated(DatabaseGeneratedOption.None)]
 		public Guid EventId { get; set; }
 		public DateTime Time { get; set; }
 		public UserEventType EventType { get; set; }
 
-		[BsonGuidRepresentation(GuidRepresentation.Standard)]
+		// [BsonGuidRepresentation(GuidRepresentation.Standard)]
 		public Guid UserId { get; set; }
 
-		[BsonGuidRepresentation(GuidRepresentation.Standard)]
+		// [BsonGuidRepresentation(GuidRepresentation.Standard)]
 		public Guid ChatId { get; set; }
 
 		public abstract void Accept(IUserChatEventVisitor visitor);
