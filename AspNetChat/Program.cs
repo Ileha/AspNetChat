@@ -8,6 +8,7 @@ using AspNetChat.Core.Services;
 using Chat;
 using Chat.Interfaces.Services;
 using Common.Extensions.DI;
+using Microsoft.AspNetCore.Identity;
 using Mongo;
 
 namespace AspNetChat
@@ -102,6 +103,47 @@ namespace AspNetChat
 			builder.Services.AddRazorPages();
 			
 			ConfigureHttpsCertificates(builder, options);
+			
+			// var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+			// builder.Services.AddDbContext<ApplicationDbContext>(options =>
+			// 	options.UseSqlServer(connectionString));
+			// builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+			//
+			// builder.Services.AddDefaultIdentity<IdentityUser>(identityOptions => identityOptions.SignIn.RequireConfirmedAccount = true)
+			// 	.AddEntityFrameworkStores<ApplicationDbContext>();
+			// builder.Services.AddRazorPages();
+			//
+			// builder.Services.Configure<IdentityOptions>(identityOptions =>
+			// {
+			// 	// Password settings.
+			// 	// identityOptions.Password.RequireDigit = true;
+			// 	// identityOptions.Password.RequireLowercase = true;
+			// 	// identityOptions.Password.RequireNonAlphanumeric = true;
+			// 	// identityOptions.Password.RequireUppercase = true;
+			// 	identityOptions.Password.RequiredLength = 6;
+			// 	// identityOptions.Password.RequiredUniqueChars = 1;
+			//
+			// 	// Lockout settings.
+			// 	identityOptions.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
+			// 	identityOptions.Lockout.MaxFailedAccessAttempts = 5;
+			// 	identityOptions.Lockout.AllowedForNewUsers = true;
+			//
+			// 	// User settings.
+			// 	identityOptions.User.AllowedUserNameCharacters =
+			// 		"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
+			// 	// identityOptions.User.RequireUniqueEmail = false;
+			// });
+			//
+			// builder.Services.ConfigureApplicationCookie(cookieAuthenticationOptions =>
+			// {
+			// 	// Cookie settings
+			// 	// cookieAuthenticationOptions.Cookie.HttpOnly = true;
+			// 	cookieAuthenticationOptions.ExpireTimeSpan = TimeSpan.FromMinutes(5);
+			//
+			// 	cookieAuthenticationOptions.LoginPath = "/Identity/Account/Login";
+			// 	cookieAuthenticationOptions.AccessDeniedPath = "/Identity/Account/AccessDenied";
+			// 	cookieAuthenticationOptions.SlidingExpiration = true;
+			// });
 
 			var app = builder.Build();
 
@@ -188,8 +230,9 @@ namespace AspNetChat
 
 			app.UseRouting();
 
-			app.UseAuthorization();
-
+			// app.UseAuthentication();
+			// app.UseAuthorization();
+			
 			app.MapRazorPages();
 
 			var appDecoratorFactory = app.Services.GetService<IFactory<WebApplication, App>>()!;

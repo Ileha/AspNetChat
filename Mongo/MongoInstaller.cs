@@ -1,14 +1,13 @@
 ﻿using Chat.Interfaces.Services.Storage;
 using Common.Extensions.DI;
 using Common.Interfaces;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Mongo.Entities;
-using MongoDB.Bson.Serialization;
-using MongoDB.Driver;
+using Mongo.EntityFramework;
 
 namespace Mongo
 {
-    public class MongoInstaller : InstallerBase
+	public class MongoInstaller : InstallerBase
     {
 		private readonly string _connectionString;
 		private readonly string _databaseName;
@@ -24,19 +23,33 @@ namespace Mongo
 
         public override void Install() 
         {
-			BsonClassMap.RegisterClassMap<BaseUserChatEvent>();
-			BsonClassMap.RegisterClassMap<UserJoined>();
-			BsonClassMap.RegisterClassMap<UserSendMessage>();
-			BsonClassMap.RegisterClassMap<UserDisconnected>();
+	        // var mongoDBSettings = builder.Configuration.GetSection("MongoDBSettings").Get<MongoDBSettings>();
+	        // Services.Configure<MongoDBSettings>(builder.Configuration.GetSection("MongoDBSettings"));
 
-			Services.BindSingletonInterfacesTo<MongoDataBaseService>(_connectionString, _databaseName);
-			Services.AddFactoryTo<
-				IIdentifiable,
-				IMongoCollection<BaseUserChatEvent>,
-				IMongoCollection<User>,
-				CancellationToken,
-				IChatStorage,
-				MongoChatStorage>();
+	        Services.AddDbContext<EntityFrameworkDbContext>(options =>
+		        options.UseMongoDB(_connectionString, _databaseName));
+
+	        Services.BindSingletonInterfacesTo<EntityFrameworkController>();
+	        
+	        Services.AddFactoryTo<
+		        IIdentifiable, 
+		        CancellationToken, 
+		        IChatStorage, 
+		        EntityFrameworkChatStorage>();
+	        
+			// BsonClassMap.RegisterClassMap<BaseUserChatEvent>();
+			// BsonClassMap.RegisterClassMap<UserJoined>();
+			// BsonClassMap.RegisterClassMap<UserSendMessage>();
+			// BsonClassMap.RegisterClassMap<UserDisconnected>();
+			//
+			// Services.BindSingletonInterfacesTo<MongoDataBaseService>(_connectionString, _databaseName);
+			// Services.AddFactoryTo<
+			// 	IIdentifiable,
+			// 	IMongoCollection<BaseUserChatEvent>,
+			// 	IMongoCollection<User>,
+			// 	CancellationToken,
+			// 	IChatStorage,
+			// 	MongoChatStorage>();
 			Services.AddFactory<MongoChatStorage.ChatEvent2EventConverter>();
 		}
     }

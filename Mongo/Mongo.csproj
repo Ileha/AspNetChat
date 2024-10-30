@@ -13,6 +13,7 @@
 
     <ItemGroup>
       <PackageReference Include="MongoDB.Driver" Version="3.0.0" />
+      <PackageReference Include="MongoDB.EntityFrameworkCore" Version="8.2.0" />
     </ItemGroup>
 
 </Project>

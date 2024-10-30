@@ -141,7 +141,7 @@ namespace Mongo
 			}
 		}
 
-		private class Event2ChatEventConverter : IEventVisitor
+		public class Event2ChatEventConverter : IEventVisitor
 		{
 			private readonly IIdentifiable _chat;
 
