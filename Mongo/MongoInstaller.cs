@@ -3,7 +3,9 @@ using Common.Extensions.DI;
 using Common.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Mongo.Entities;
 using Mongo.EntityFramework;
+using MongoDB.Bson.Serialization;
 
 namespace Mongo
 {
@@ -23,13 +25,12 @@ namespace Mongo
 
         public override void Install() 
         {
-	        // var mongoDBSettings = builder.Configuration.GetSection("MongoDBSettings").Get<MongoDBSettings>();
-	        // Services.Configure<MongoDBSettings>(builder.Configuration.GetSection("MongoDBSettings"));
-
 	        Services.AddDbContext<EntityFrameworkDbContext>(
 		        options => options.UseMongoDB(_connectionString, _databaseName), 
 		        ServiceLifetime.Singleton, 
 		        ServiceLifetime.Singleton);
+		       
+	        // Services.AddDbContext<EntityFrameworkDbContext>(options => options.UseMongoDb())
 
 	        Services.BindSingletonInterfacesTo<EntityFrameworkController>();
 	        

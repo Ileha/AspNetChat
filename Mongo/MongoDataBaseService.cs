@@ -70,7 +70,7 @@ namespace Mongo
 		{
 			_lifeTokenSource.Cancel();
 			_lifeTokenSource.Dispose();
-			_client.Dispose();
+			// _client.Dispose();
 		}
 	}
 }

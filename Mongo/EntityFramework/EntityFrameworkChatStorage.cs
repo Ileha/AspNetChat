@@ -29,16 +29,19 @@ internal class EntityFrameworkChatStorage : IChatStorage
 
     public async Task<IEnumerable<IEvent>> GetChatEvents()
     {
-        var dbEvents = await _dbContext.UserChatEvents
+        var dbEvents = await _dbContext.UserChatEvents.AsQueryable()
             .Where(@event => _chat.Id.Equals(@event.ChatId))
             .OrderBy(@event => @event.Time)
-            .Join(
-                _dbContext.Users,
-                @event => @event.UserId,
-                user => user.Id,
-                (@event, user) => new DBEvent(@event, user)
-            )
             .ToListAsync(cancellationToken: _token);
+
+        var allUsers = dbEvents
+            .Select(@event => @event.UserId)
+            .Distinct()
+            .ToHashSet();
+        
+        var users = await _dbContext.Users
+            .Where(user => allUsers.Contains(user.Id))
+            .ToDictionaryAsync(user => user.Id, user => user, cancellationToken: _token);
 
         var converter = _chatEvent2EventConverterFactory.Create();
 
@@ -46,8 +49,11 @@ internal class EntityFrameworkChatStorage : IChatStorage
             .Select(
                 item =>
                 {
-                    converter.SetUser(item.User);
-                    item.Event.Accept(converter);
+                    if (!users.TryGetValue(item.UserId, out var user))
+                        throw new InvalidOperationException($"unable to find user with id {item.UserId}");
+                    
+                    converter.SetUser(user);
+                    item.Accept(converter);
 
                     if (converter.Event == null)
                         throw new InvalidOperationException($"unable to convert event with type {item.GetType()}");
@@ -69,6 +75,4 @@ internal class EntityFrameworkChatStorage : IChatStorage
         
         await _dbContext.SaveChangesAsync(_token);
     }
-    
-    private record struct DBEvent(BaseUserChatEvent Event, User User);
 }

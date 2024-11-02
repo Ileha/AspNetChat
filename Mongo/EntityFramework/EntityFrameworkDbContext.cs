@@ -17,12 +17,8 @@ public class EntityFrameworkDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
-			
-        modelBuilder.Entity<User>().ToCollection("EFUsers");
         
-        // modelBuilder.Entity<User>(builder => 
-        //     builder.Property(entity => entity.Id).HasElementName("_id")
-        // );
+        modelBuilder.Entity<User>().ToCollection("EFUsers");
         
         modelBuilder.Entity<BaseUserChatEvent>().ToCollection("EFBaseUserChatEvent");
         modelBuilder.Entity<UserJoined>().ToCollection("EFUserJoined");
