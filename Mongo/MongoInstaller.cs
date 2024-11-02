@@ -3,9 +3,8 @@ using Common.Extensions.DI;
 using Common.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Mongo.Entities;
+using Mongo.Common.Converter;
 using Mongo.EntityFramework;
-using MongoDB.Bson.Serialization;
 
 namespace Mongo
 {
@@ -29,8 +28,6 @@ namespace Mongo
 		        options => options.UseMongoDB(_connectionString, _databaseName), 
 		        ServiceLifetime.Singleton, 
 		        ServiceLifetime.Singleton);
-		       
-	        // Services.AddDbContext<EntityFrameworkDbContext>(options => options.UseMongoDb())
 
 	        Services.BindSingletonInterfacesTo<EntityFrameworkController>();
 	        
@@ -40,20 +37,8 @@ namespace Mongo
 		        IChatStorage, 
 		        EntityFrameworkChatStorage>();
 	        
-			// BsonClassMap.RegisterClassMap<BaseUserChatEvent>();
-			// BsonClassMap.RegisterClassMap<UserJoined>();
-			// BsonClassMap.RegisterClassMap<UserSendMessage>();
-			// BsonClassMap.RegisterClassMap<UserDisconnected>();
-			//
-			// Services.BindSingletonInterfacesTo<MongoDataBaseService>(_connectionString, _databaseName);
-			// Services.AddFactoryTo<
-			// 	IIdentifiable,
-			// 	IMongoCollection<BaseUserChatEvent>,
-			// 	IMongoCollection<User>,
-			// 	CancellationToken,
-			// 	IChatStorage,
-			// 	MongoChatStorage>();
-			Services.AddFactory<MongoChatStorage.ChatEvent2EventConverter>();
+			Services.AddFactory<ChatEvent2EventConverter>();
+			Services.AddFactory<IIdentifiable, Event2ChatEventConverter>();
 		}
     }
 }
