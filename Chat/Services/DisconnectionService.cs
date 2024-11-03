@@ -1,41 +1,38 @@
-﻿using System.Net;
-using Chat.Interfaces.Services;
+﻿using Chat.Interfaces.Services;
 using Common.Entities;
 using Microsoft.AspNetCore.Http;
 
-namespace Chat.Services
+namespace Chat.Services;
+
+public class DisconnectionService : IDisconnectionService
 {
-	public class DisconnectionService : IDisconnectionService
+	private readonly ChatUserHelper _chatUserHelper;
+
+	public DisconnectionService(ChatUserHelper chatUserHelper) 
 	{
-		private readonly ChatUserHelper _chatUserHelper;
+		_chatUserHelper = chatUserHelper ?? throw new ArgumentNullException(nameof(chatUserHelper));
+	}
 
-		public DisconnectionService(ChatUserHelper chatUserHelper) 
+	public async Task DisconnectUser(string userId, string chatId, HttpContext context)
+	{
+		if (!_chatUserHelper.GetUserAndChatId(userId, chatId, out var statusCode, out var message, out var userGuid, out var chatGuid))
 		{
-			_chatUserHelper = chatUserHelper ?? throw new ArgumentNullException(nameof(chatUserHelper));
+			context.Response.StatusCode = (int)statusCode;
+			await context.Response.WriteAsync(message);
+
+			return;
 		}
 
-		public async Task DisconnectUser(string userID, string chatID, HttpContext context)
+		var userAndChatResult = await _chatUserHelper.GetUserAndChat(userGuid, chatGuid);
+
+		if (!userAndChatResult.has || userAndChatResult.chat == null)
 		{
-			var message = string.Empty;
-			var statusCode = HttpStatusCode.InternalServerError;
+			context.Response.StatusCode = (int)userAndChatResult.statusCode;
+			await context.Response.WriteAsync(userAndChatResult.message);
 
-			if (!_chatUserHelper.GetUserAndChatID(userID, chatID, out statusCode, out message, out var userGuid, out var chatGuid))
-			{
-				context.Response.StatusCode = (int)statusCode;
-				await context.Response.WriteAsync(message);
-
-				return;
-			}
-
-			if (!_chatUserHelper.GetUserAndChat(userGuid, chatGuid, out statusCode, out message, out var chat))
-			{
-				context.Response.StatusCode = (int)statusCode;
-				await context.Response.WriteAsync(message);
-
-				return;
-			}
-
-			chat.DisconnectedParticipant((Identifiable) userGuid);
+			return;
 		}
+
+		userAndChatResult.chat.DisconnectedParticipant((Identifiable) userGuid);
 	}
 }

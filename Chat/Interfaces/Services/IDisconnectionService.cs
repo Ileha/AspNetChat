@@ -5,6 +5,6 @@ namespace Chat.Interfaces.Services
 
 	public interface IDisconnectionService 
 	{
-		Task DisconnectUser(string userID, string chatID, HttpContext context);
+		Task DisconnectUser(string userId, string chatId, HttpContext context);
 	}
 }

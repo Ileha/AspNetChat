@@ -8,15 +8,15 @@ namespace Chat.Pages
 	public class ChatRoomModel : PageModel
     {
         private readonly IChatContainer _chatContainer;
-        private readonly IFactory<IChatPartisipant.ParticipantParams, IChatPartisipant> _participantFactory;
+        private readonly IFactory<IChatParticipant.ParticipantParams, IChatParticipant> _participantFactory;
 		private readonly ChatEventComposer _chatEventComposer;
 
-        public IChatPartisipant? ChatUser { get; private set; }
+        public IChatParticipant? ChatUser { get; private set; }
         public IChat? Chat { get; private set; }
 
 		public ChatRoomModel(
             IChatContainer chatContainer,
-            IFactory<IChatPartisipant.ParticipantParams, IChatPartisipant> participantFactory,
+            IFactory<IChatParticipant.ParticipantParams, IChatParticipant> participantFactory,
 			ChatEventComposer chatEventComposer
 			)
         {
@@ -34,7 +34,7 @@ namespace Chat.Pages
         {
 			Chat = _chatContainer.GetChatByName(chatName);
 
-            var tempUser = _participantFactory.Create(new IChatPartisipant.ParticipantParams(userName, Guid.NewGuid()));
+            var tempUser = _participantFactory.Create(new IChatParticipant.ParticipantParams(userName, Guid.NewGuid()));
 			ChatUser = await Chat.JoinParticipant(tempUser);
         }
 

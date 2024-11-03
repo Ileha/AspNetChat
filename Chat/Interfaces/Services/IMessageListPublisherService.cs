@@ -5,6 +5,6 @@ namespace Chat.Interfaces.Services
 
 	public interface IMessageListPublisherService
 	{
-		Task ConnectWebSocket(string userID, string chatID, HttpContext context);
+		Task ConnectWebSocket(string userId, string chatId, HttpContext context);
 	}
 }

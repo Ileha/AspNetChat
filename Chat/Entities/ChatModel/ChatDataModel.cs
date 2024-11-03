@@ -1,5 +1,4 @@
-﻿using System.Collections.Concurrent;
-using System.Security.Cryptography;
+﻿using System.Security.Cryptography;
 using System.Text;
 using Chat.Interfaces;
 using Chat.Interfaces.Services.Storage;
@@ -7,55 +6,50 @@ using Common.Entities;
 using Common.Extensions.DI;
 using static Chat.Interfaces.IChat;
 
-namespace Chat.Entities.ChatModel
+namespace Chat.Entities.ChatModel;
+
+public class ChatDataModel : IChatContainer
 {
-	public class ChatDataModel : IChatContainer
+    private readonly IFactory<ChatParams, IChat> _chatFactory;
+    private readonly IDataBaseService _chatDataBase;
+
+    public ChatDataModel(
+        IFactory<ChatParams, IChat> chatFactory, 
+        IDataBaseService chatDataBase)
     {
-        private readonly ConcurrentDictionary<Guid, IChat> _chats = new();
-        private readonly IFactory<ChatParams, IChat> _chatFactory;
-		private readonly IDataBaseService _chatDataBase;
+        _chatFactory = chatFactory ?? throw new ArgumentNullException(nameof(chatFactory));
+        _chatDataBase = chatDataBase ?? throw new ArgumentNullException(nameof(chatDataBase));
+    }
 
-		public ChatDataModel(IFactory<ChatParams, IChat> chatFactory, IDataBaseService chatDataBase)
-        {
-            _chatFactory = chatFactory ?? throw new ArgumentNullException(nameof(chatFactory));
-			_chatDataBase = chatDataBase ?? throw new ArgumentNullException(nameof(chatDataBase));
-		}
+    public IChat GetChatById(Guid chatId)
+    {
+        var chatStorage = _chatDataBase.GetChatStorage((Identifiable) chatId);
 
-        public IChat GetChatById(Guid chatId)
-        {
-            var chatStorage = _chatDataBase.GetChatStorage((Identifiable) chatId);
+        return _chatFactory.Create(new ChatParams(chatId, chatStorage));
+    }
 
-			_chats.AddOrUpdate(
-				chatId,
-				(chatId) => _chatFactory.Create(new ChatParams(chatId, chatStorage)),
-				(chatId, item) => item);
+    public IChat GetChatByName(string name)
+    {
+        var chatGuid = GetGuidFromName(name);
+        return GetChatById(chatGuid);
+    }
 
-			return _chats[chatId];
-        }
+    public async Task<bool> HasChat(string name)
+    {
+        var chatGuid = GetGuidFromName(name);
 
-        public IChat GetChatByName(string name)
-        {
-            var chatGuid = GetGuidFromName(name);
-            return GetChatById(chatGuid);
-        }
+        return await HasChat(chatGuid);
+    }
 
-        public bool HasChat(string name)
-        {
-            var chatGuid = GetGuidFromName(name);
+    public async Task<bool> HasChat(Guid chatId)
+    {
+        return await _chatDataBase.HasChat((Identifiable) chatId);
+    }
 
-            return HasChat(chatGuid);
-        }
-
-        public bool HasChat(Guid chatId)
-        {
-            return _chats.ContainsKey(chatId);
-        }
-
-        private Guid GetGuidFromName(string name)
-        {
-            using var md5 = MD5.Create();
-            var hash = md5.ComputeHash(Encoding.UTF8.GetBytes(name));
-            return new Guid(hash);
-        }
+    private Guid GetGuidFromName(string name)
+    {
+        using var md5 = MD5.Create();
+        var hash = md5.ComputeHash(Encoding.UTF8.GetBytes(name));
+        return new Guid(hash);
     }
 }

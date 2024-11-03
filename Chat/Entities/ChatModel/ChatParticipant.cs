@@ -1,9 +1,9 @@
 ﻿using Chat.Interfaces;
-using static Chat.Interfaces.IChatPartisipant;
+using static Chat.Interfaces.IChatParticipant;
 
 namespace Chat.Entities.ChatModel
 {
-    public class ChatParticipant : IChatPartisipant
+    public class ChatParticipant : IChatParticipant
     {
         public string Name { get; }
 

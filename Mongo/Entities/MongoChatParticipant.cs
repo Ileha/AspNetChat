@@ -2,7 +2,7 @@
 
 namespace Mongo.Entities
 {
-    internal class MongoChatParticipant : IChatPartisipant
+    internal class MongoChatParticipant : IChatParticipant
     {
         private readonly User _user;
 

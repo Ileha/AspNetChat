@@ -2,7 +2,7 @@
 
 namespace Chat.Interfaces
 {
-    public interface IChatPartisipant : IIdentifiable
+    public interface IChatParticipant : IIdentifiable
     {
         string Name { get; }
 

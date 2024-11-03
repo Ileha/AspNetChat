@@ -5,8 +5,8 @@ namespace Chat.Interfaces.Services
 	public interface IMessageReceiverService 
 	{
 		Task ReceiveMessage(
-			string userID, 
-			string chatID, 
+			string userId, 
+			string chatId, 
 			string message,
 			HttpContext context);
 	}

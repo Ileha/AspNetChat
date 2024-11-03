@@ -4,6 +4,6 @@ namespace Chat.Interfaces.Services.Storage
 {
 	public interface IUserStorage 
     {
-        Task<IChatPartisipant> AddOrGetParticipant(IIdentifiable identifiable, IChatPartisipant partisipant);
+        Task<IChatParticipant> AddOrGetParticipant(IIdentifiable identifiable, IChatParticipant participant);
     }
 }
