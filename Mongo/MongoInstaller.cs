@@ -1,48 +1,55 @@
-﻿using Chat.Interfaces.Services.Storage;
+﻿using Autofac;
+using Chat.Interfaces.Services.Storage;
 using Common.Extensions.DI;
 using Common.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Mongo.Common.Converter;
 using Mongo.EntityFramework;
 
 namespace Mongo;
 
-public class MongoInstaller : InstallerBase
+public class MongoInstaller : AutofacInstallerBase
 {
 	private readonly string _connectionString;
 	private readonly string _databaseName;
 
 	public MongoInstaller(
-		IServiceCollection services, 
+		ContainerBuilder builder, 
 		string? connectionString, 
-		string? databaseName) : base(services)
+		string? databaseName) : base(builder)
 	{
 		_connectionString = connectionString ?? throw new ArgumentNullException(nameof(connectionString));
 		_databaseName = databaseName ?? throw new ArgumentNullException(nameof(databaseName));
 	}
 
-	public override void Install() 
+	public override void Install()
 	{
-		Services.AddDbContext<EntityFrameworkDbContext>(
-			options => options.UseMongoDB(_connectionString, _databaseName));
+		var optionBuilder = new DbContextOptionsBuilder<EntityFrameworkDbContext>();
+		optionBuilder.UseMongoDB(_connectionString, _databaseName);
+		
+		Builder
+			.RegisterType<EntityFrameworkDbContext>()
+			.AsSelf()
+			.WithParameters([
+				new TypedParameter(typeof(DbContextOptions), optionBuilder.Options)
+			])
+			.InstancePerLifetimeScope();
 
-		Services.Scan(scan =>
-		{
-			scan
-				.FromAssemblyOf<MongoInstaller>()
-				.AddClasses(@class => @class.AssignableTo<EntityFrameworkController>())
-				.AsImplementedInterfaces()
-				.WithScopedLifetime();
-		});
-	        
-		Services.AddFactoryTo<
-			IIdentifiable, 
-			CancellationToken, 
-			IChatStorage, 
-			EntityFrameworkChatStorage>();
-	        
-		Services.AddFactory<ChatEvent2EventConverter>();
-		Services.AddFactory<IIdentifiable, Event2ChatEventConverter>();
+		Builder
+			.RegisterType<EntityFrameworkController>()
+			.AsImplementedInterfaces()
+			.InstancePerLifetimeScope();
+		
+		Builder
+			.AddFactoryTo<IIdentifiable, CancellationToken, IChatStorage, EntityFrameworkChatStorage>()
+			.InstancePerLifetimeScope();
+
+		Builder
+			.AddFactory<ChatEvent2EventConverter>()
+			.SingleInstance();
+
+		Builder
+			.AddFactory<IIdentifiable, Event2ChatEventConverter>()
+			.SingleInstance();
 	}
 }

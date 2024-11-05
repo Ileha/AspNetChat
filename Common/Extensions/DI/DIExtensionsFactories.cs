@@ -1,16 +1,58 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Scrutor;
+using Autofac;
+using Autofac.Builder;
 
 namespace Common.Extensions.DI
 {
     public static partial class DIExtensions
     {
+        public static IRegistrationBuilder<
+            IFactory<TContract>, 
+            ConcreteReflectionActivatorData, 
+            SingleRegistrationStyle> AddFactoryTo<TContract, TInstance>(this ContainerBuilder typeSourceSelector)
+            where TInstance : class, TContract
+            where TContract : notnull
+        {
+            return typeSourceSelector
+                .RegisterType<AutofacResolveFactoryContract<TContract, TInstance>>()
+                .As<IFactory<TContract>>();
+        }
+        
+        private class AutofacResolveFactoryContract<TContract, TInstance> : IFactory<TContract> 
+            where TInstance : class, TContract
+            where TContract : notnull
+        {
+            private readonly ILifetimeScope _scope;
+
+            public AutofacResolveFactoryContract(ILifetimeScope scope)
+            {
+                _scope = scope ?? throw new ArgumentNullException(nameof(scope));
+            }
+
+            public TContract Create()
+            {
+                return new ContainerWrapper(_scope).ResolveWith<TInstance>();
+            }
+        }
+
+        public static ILifetimeSelector AddFactoryTo<TContract, TInstance>(this IAssemblySelector assemblySelector)
+            where TInstance : class, TContract
+        {
+            return assemblySelector
+                .FromAssemblyOf<ResolveFactoryContract<TContract, TInstance>>()
+                .AddClasses(filter => filter.AssignableTo(typeof(ResolveFactoryContract<,>)))
+                .AsSelf()
+                .AsImplementedInterfaces();
+        }
+
         public static void AddFactoryTo<TContract, TInstance>(this IServiceCollection services)
             where TInstance : class, TContract
         {
             services.AddSingleton<IFactory<TContract>, ResolveFactoryContract<TContract, TInstance>>(x => new ResolveFactoryContract<TContract, TInstance>(x));
         }
 
-        private class ResolveFactoryContract<TContract, TInstance> : IFactory<TContract>
+        public class ResolveFactoryContract<TContract, TInstance> : IFactory<TContract>
 			where TInstance : class, TContract
 		{
 			private readonly IServiceProvider _serviceProvider;
@@ -26,469 +68,31 @@ namespace Common.Extensions.DI
 			}
 		}
 
-        public static void AddFactoryTo<P0, TContract, TInstance>(this IServiceCollection services)
-            where TInstance : class, TContract
+        public static IRegistrationBuilder<
+            IFactory<TInstance>, 
+            ConcreteReflectionActivatorData, 
+            SingleRegistrationStyle> AddFactory<TInstance>(this ContainerBuilder typeSourceSelector)
+            where TInstance : class
         {
-            services.AddSingleton<IFactory<P0, TContract>, ResolveFactoryContract<P0, TContract, TInstance>>(x => new ResolveFactoryContract<P0, TContract, TInstance>(x));
+            return typeSourceSelector
+                .RegisterType<AutofacResolveFactoryContract<TInstance, TInstance>>()
+                .As<IFactory<TInstance>>();
         }
 
-        private class ResolveFactoryContract<P0, TContract, TInstance> : IFactory<P0, TContract>
-			where TInstance : class, TContract
-		{
-			private readonly IServiceProvider _serviceProvider;
-
-			public ResolveFactoryContract(IServiceProvider serviceProvider)
-			{
-				_serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
-			}
-
-			public TContract Create(P0 param0)
-			{
-                return _serviceProvider.ResolveWith<TInstance>(parameters: new object[] { param0 });
-			}
-		}
-
-        public static void AddFactoryTo<P0, P1, TContract, TInstance>(this IServiceCollection services)
-            where TInstance : class, TContract
+		public static ILifetimeSelector AddFactory<T>(this IAssemblySelector assemblySelector)
+            where T : class
         {
-            services.AddSingleton<IFactory<P0, P1, TContract>, ResolveFactoryContract<P0, P1, TContract, TInstance>>(x => new ResolveFactoryContract<P0, P1, TContract, TInstance>(x));
+            return assemblySelector
+                .FromAssemblyOf<ResolveFactoryContract<T, T>>()
+                .AddClass<ResolveFactoryContract<T, T>>()
+                .As<IFactory<T>>();
         }
-
-        private class ResolveFactoryContract<P0, P1, TContract, TInstance> : IFactory<P0, P1, TContract>
-			where TInstance : class, TContract
-		{
-			private readonly IServiceProvider _serviceProvider;
-
-			public ResolveFactoryContract(IServiceProvider serviceProvider)
-			{
-				_serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
-			}
-
-			public TContract Create(P0 param0, P1 param1)
-			{
-                return _serviceProvider.ResolveWith<TInstance>(parameters: new object[] { param0, param1 });
-			}
-		}
-
-        public static void AddFactoryTo<P0, P1, P2, TContract, TInstance>(this IServiceCollection services)
-            where TInstance : class, TContract
-        {
-            services.AddSingleton<IFactory<P0, P1, P2, TContract>, ResolveFactoryContract<P0, P1, P2, TContract, TInstance>>(x => new ResolveFactoryContract<P0, P1, P2, TContract, TInstance>(x));
-        }
-
-        private class ResolveFactoryContract<P0, P1, P2, TContract, TInstance> : IFactory<P0, P1, P2, TContract>
-			where TInstance : class, TContract
-		{
-			private readonly IServiceProvider _serviceProvider;
-
-			public ResolveFactoryContract(IServiceProvider serviceProvider)
-			{
-				_serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
-			}
-
-			public TContract Create(P0 param0, P1 param1, P2 param2)
-			{
-                return _serviceProvider.ResolveWith<TInstance>(parameters: new object[] { param0, param1, param2 });
-			}
-		}
-
-        public static void AddFactoryTo<P0, P1, P2, P3, TContract, TInstance>(this IServiceCollection services)
-            where TInstance : class, TContract
-        {
-            services.AddSingleton<IFactory<P0, P1, P2, P3, TContract>, ResolveFactoryContract<P0, P1, P2, P3, TContract, TInstance>>(x => new ResolveFactoryContract<P0, P1, P2, P3, TContract, TInstance>(x));
-        }
-
-        private class ResolveFactoryContract<P0, P1, P2, P3, TContract, TInstance> : IFactory<P0, P1, P2, P3, TContract>
-			where TInstance : class, TContract
-		{
-			private readonly IServiceProvider _serviceProvider;
-
-			public ResolveFactoryContract(IServiceProvider serviceProvider)
-			{
-				_serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
-			}
-
-			public TContract Create(P0 param0, P1 param1, P2 param2, P3 param3)
-			{
-                return _serviceProvider.ResolveWith<TInstance>(parameters: new object[] { param0, param1, param2, param3 });
-			}
-		}
-
-        public static void AddFactoryTo<P0, P1, P2, P3, P4, TContract, TInstance>(this IServiceCollection services)
-            where TInstance : class, TContract
-        {
-            services.AddSingleton<IFactory<P0, P1, P2, P3, P4, TContract>, ResolveFactoryContract<P0, P1, P2, P3, P4, TContract, TInstance>>(x => new ResolveFactoryContract<P0, P1, P2, P3, P4, TContract, TInstance>(x));
-        }
-
-        private class ResolveFactoryContract<P0, P1, P2, P3, P4, TContract, TInstance> : IFactory<P0, P1, P2, P3, P4, TContract>
-			where TInstance : class, TContract
-		{
-			private readonly IServiceProvider _serviceProvider;
-
-			public ResolveFactoryContract(IServiceProvider serviceProvider)
-			{
-				_serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
-			}
-
-			public TContract Create(P0 param0, P1 param1, P2 param2, P3 param3, P4 param4)
-			{
-                return _serviceProvider.ResolveWith<TInstance>(parameters: new object[] { param0, param1, param2, param3, param4 });
-			}
-		}
-
-        public static void AddFactoryTo<P0, P1, P2, P3, P4, P5, TContract, TInstance>(this IServiceCollection services)
-            where TInstance : class, TContract
-        {
-            services.AddSingleton<IFactory<P0, P1, P2, P3, P4, P5, TContract>, ResolveFactoryContract<P0, P1, P2, P3, P4, P5, TContract, TInstance>>(x => new ResolveFactoryContract<P0, P1, P2, P3, P4, P5, TContract, TInstance>(x));
-        }
-
-        private class ResolveFactoryContract<P0, P1, P2, P3, P4, P5, TContract, TInstance> : IFactory<P0, P1, P2, P3, P4, P5, TContract>
-			where TInstance : class, TContract
-		{
-			private readonly IServiceProvider _serviceProvider;
-
-			public ResolveFactoryContract(IServiceProvider serviceProvider)
-			{
-				_serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
-			}
-
-			public TContract Create(P0 param0, P1 param1, P2 param2, P3 param3, P4 param4, P5 param5)
-			{
-                return _serviceProvider.ResolveWith<TInstance>(parameters: new object[] { param0, param1, param2, param3, param4, param5 });
-			}
-		}
-
-        public static void AddFactoryTo<P0, P1, P2, P3, P4, P5, P6, TContract, TInstance>(this IServiceCollection services)
-            where TInstance : class, TContract
-        {
-            services.AddSingleton<IFactory<P0, P1, P2, P3, P4, P5, P6, TContract>, ResolveFactoryContract<P0, P1, P2, P3, P4, P5, P6, TContract, TInstance>>(x => new ResolveFactoryContract<P0, P1, P2, P3, P4, P5, P6, TContract, TInstance>(x));
-        }
-
-        private class ResolveFactoryContract<P0, P1, P2, P3, P4, P5, P6, TContract, TInstance> : IFactory<P0, P1, P2, P3, P4, P5, P6, TContract>
-			where TInstance : class, TContract
-		{
-			private readonly IServiceProvider _serviceProvider;
-
-			public ResolveFactoryContract(IServiceProvider serviceProvider)
-			{
-				_serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
-			}
-
-			public TContract Create(P0 param0, P1 param1, P2 param2, P3 param3, P4 param4, P5 param5, P6 param6)
-			{
-                return _serviceProvider.ResolveWith<TInstance>(parameters: new object[] { param0, param1, param2, param3, param4, param5, param6 });
-			}
-		}
-
-        public static void AddFactoryTo<P0, P1, P2, P3, P4, P5, P6, P7, TContract, TInstance>(this IServiceCollection services)
-            where TInstance : class, TContract
-        {
-            services.AddSingleton<IFactory<P0, P1, P2, P3, P4, P5, P6, P7, TContract>, ResolveFactoryContract<P0, P1, P2, P3, P4, P5, P6, P7, TContract, TInstance>>(x => new ResolveFactoryContract<P0, P1, P2, P3, P4, P5, P6, P7, TContract, TInstance>(x));
-        }
-
-        private class ResolveFactoryContract<P0, P1, P2, P3, P4, P5, P6, P7, TContract, TInstance> : IFactory<P0, P1, P2, P3, P4, P5, P6, P7, TContract>
-			where TInstance : class, TContract
-		{
-			private readonly IServiceProvider _serviceProvider;
-
-			public ResolveFactoryContract(IServiceProvider serviceProvider)
-			{
-				_serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
-			}
-
-			public TContract Create(P0 param0, P1 param1, P2 param2, P3 param3, P4 param4, P5 param5, P6 param6, P7 param7)
-			{
-                return _serviceProvider.ResolveWith<TInstance>(parameters: new object[] { param0, param1, param2, param3, param4, param5, param6, param7 });
-			}
-		}
-
-        public static void AddFactoryTo<P0, P1, P2, P3, P4, P5, P6, P7, P8, TContract, TInstance>(this IServiceCollection services)
-            where TInstance : class, TContract
-        {
-            services.AddSingleton<IFactory<P0, P1, P2, P3, P4, P5, P6, P7, P8, TContract>, ResolveFactoryContract<P0, P1, P2, P3, P4, P5, P6, P7, P8, TContract, TInstance>>(x => new ResolveFactoryContract<P0, P1, P2, P3, P4, P5, P6, P7, P8, TContract, TInstance>(x));
-        }
-
-        private class ResolveFactoryContract<P0, P1, P2, P3, P4, P5, P6, P7, P8, TContract, TInstance> : IFactory<P0, P1, P2, P3, P4, P5, P6, P7, P8, TContract>
-			where TInstance : class, TContract
-		{
-			private readonly IServiceProvider _serviceProvider;
-
-			public ResolveFactoryContract(IServiceProvider serviceProvider)
-			{
-				_serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
-			}
-
-			public TContract Create(P0 param0, P1 param1, P2 param2, P3 param3, P4 param4, P5 param5, P6 param6, P7 param7, P8 param8)
-			{
-                return _serviceProvider.ResolveWith<TInstance>(parameters: new object[] { param0, param1, param2, param3, param4, param5, param6, param7, param8 });
-			}
-		}
-
-        public static void AddFactoryTo<P0, P1, P2, P3, P4, P5, P6, P7, P8, P9, TContract, TInstance>(this IServiceCollection services)
-            where TInstance : class, TContract
-        {
-            services.AddSingleton<IFactory<P0, P1, P2, P3, P4, P5, P6, P7, P8, P9, TContract>, ResolveFactoryContract<P0, P1, P2, P3, P4, P5, P6, P7, P8, P9, TContract, TInstance>>(x => new ResolveFactoryContract<P0, P1, P2, P3, P4, P5, P6, P7, P8, P9, TContract, TInstance>(x));
-        }
-
-        private class ResolveFactoryContract<P0, P1, P2, P3, P4, P5, P6, P7, P8, P9, TContract, TInstance> : IFactory<P0, P1, P2, P3, P4, P5, P6, P7, P8, P9, TContract>
-			where TInstance : class, TContract
-		{
-			private readonly IServiceProvider _serviceProvider;
-
-			public ResolveFactoryContract(IServiceProvider serviceProvider)
-			{
-				_serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
-			}
-
-			public TContract Create(P0 param0, P1 param1, P2 param2, P3 param3, P4 param4, P5 param5, P6 param6, P7 param7, P8 param8, P9 param9)
-			{
-                return _serviceProvider.ResolveWith<TInstance>(parameters: new object[] { param0, param1, param2, param3, param4, param5, param6, param7, param8, param9 });
-			}
-		}
-
 
         public static void AddFactory<T>(this IServiceCollection services)
             where T : class
         {
-            services.AddSingleton<IFactory<T>, ResolveFactory<T>>(x => new ResolveFactory<T>(x));
+            services.AddSingleton<IFactory<T>, ResolveFactoryContract<T, T>>(x => new ResolveFactoryContract<T, T>(x));
         }
-
-        private class ResolveFactory<T> : IFactory<T>
-			where T : class
-		{
-			private readonly IServiceProvider _serviceProvider;
-
-			public ResolveFactory(IServiceProvider serviceProvider)
-			{
-				_serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(_serviceProvider));
-			}
-
-			public T Create()
-			{
-                return _serviceProvider.ResolveWith<T>();
-			}
-		}
-
-        public static void AddFactory<P0, T>(this IServiceCollection services)
-            where T : class
-        {
-            services.AddSingleton<IFactory<P0, T>, ResolveFactory<P0, T>>(x => new ResolveFactory<P0, T>(x));
-        }
-
-        private class ResolveFactory<P0, T> : IFactory<P0, T>
-			where T : class
-		{
-			private readonly IServiceProvider _serviceProvider;
-
-			public ResolveFactory(IServiceProvider serviceProvider)
-			{
-				_serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(_serviceProvider));
-			}
-
-			public T Create(P0 param0)
-			{
-                return _serviceProvider.ResolveWith<T>(parameters: new object[] { param0 });
-			}
-		}
-
-        public static void AddFactory<P0, P1, T>(this IServiceCollection services)
-            where T : class
-        {
-            services.AddSingleton<IFactory<P0, P1, T>, ResolveFactory<P0, P1, T>>(x => new ResolveFactory<P0, P1, T>(x));
-        }
-
-        private class ResolveFactory<P0, P1, T> : IFactory<P0, P1, T>
-			where T : class
-		{
-			private readonly IServiceProvider _serviceProvider;
-
-			public ResolveFactory(IServiceProvider serviceProvider)
-			{
-				_serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(_serviceProvider));
-			}
-
-			public T Create(P0 param0, P1 param1)
-			{
-                return _serviceProvider.ResolveWith<T>(parameters: new object[] { param0, param1 });
-			}
-		}
-
-        public static void AddFactory<P0, P1, P2, T>(this IServiceCollection services)
-            where T : class
-        {
-            services.AddSingleton<IFactory<P0, P1, P2, T>, ResolveFactory<P0, P1, P2, T>>(x => new ResolveFactory<P0, P1, P2, T>(x));
-        }
-
-        private class ResolveFactory<P0, P1, P2, T> : IFactory<P0, P1, P2, T>
-			where T : class
-		{
-			private readonly IServiceProvider _serviceProvider;
-
-			public ResolveFactory(IServiceProvider serviceProvider)
-			{
-				_serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(_serviceProvider));
-			}
-
-			public T Create(P0 param0, P1 param1, P2 param2)
-			{
-                return _serviceProvider.ResolveWith<T>(parameters: new object[] { param0, param1, param2 });
-			}
-		}
-
-        public static void AddFactory<P0, P1, P2, P3, T>(this IServiceCollection services)
-            where T : class
-        {
-            services.AddSingleton<IFactory<P0, P1, P2, P3, T>, ResolveFactory<P0, P1, P2, P3, T>>(x => new ResolveFactory<P0, P1, P2, P3, T>(x));
-        }
-
-        private class ResolveFactory<P0, P1, P2, P3, T> : IFactory<P0, P1, P2, P3, T>
-			where T : class
-		{
-			private readonly IServiceProvider _serviceProvider;
-
-			public ResolveFactory(IServiceProvider serviceProvider)
-			{
-				_serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(_serviceProvider));
-			}
-
-			public T Create(P0 param0, P1 param1, P2 param2, P3 param3)
-			{
-                return _serviceProvider.ResolveWith<T>(parameters: new object[] { param0, param1, param2, param3 });
-			}
-		}
-
-        public static void AddFactory<P0, P1, P2, P3, P4, T>(this IServiceCollection services)
-            where T : class
-        {
-            services.AddSingleton<IFactory<P0, P1, P2, P3, P4, T>, ResolveFactory<P0, P1, P2, P3, P4, T>>(x => new ResolveFactory<P0, P1, P2, P3, P4, T>(x));
-        }
-
-        private class ResolveFactory<P0, P1, P2, P3, P4, T> : IFactory<P0, P1, P2, P3, P4, T>
-			where T : class
-		{
-			private readonly IServiceProvider _serviceProvider;
-
-			public ResolveFactory(IServiceProvider serviceProvider)
-			{
-				_serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(_serviceProvider));
-			}
-
-			public T Create(P0 param0, P1 param1, P2 param2, P3 param3, P4 param4)
-			{
-                return _serviceProvider.ResolveWith<T>(parameters: new object[] { param0, param1, param2, param3, param4 });
-			}
-		}
-
-        public static void AddFactory<P0, P1, P2, P3, P4, P5, T>(this IServiceCollection services)
-            where T : class
-        {
-            services.AddSingleton<IFactory<P0, P1, P2, P3, P4, P5, T>, ResolveFactory<P0, P1, P2, P3, P4, P5, T>>(x => new ResolveFactory<P0, P1, P2, P3, P4, P5, T>(x));
-        }
-
-        private class ResolveFactory<P0, P1, P2, P3, P4, P5, T> : IFactory<P0, P1, P2, P3, P4, P5, T>
-			where T : class
-		{
-			private readonly IServiceProvider _serviceProvider;
-
-			public ResolveFactory(IServiceProvider serviceProvider)
-			{
-				_serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(_serviceProvider));
-			}
-
-			public T Create(P0 param0, P1 param1, P2 param2, P3 param3, P4 param4, P5 param5)
-			{
-                return _serviceProvider.ResolveWith<T>(parameters: new object[] { param0, param1, param2, param3, param4, param5 });
-			}
-		}
-
-        public static void AddFactory<P0, P1, P2, P3, P4, P5, P6, T>(this IServiceCollection services)
-            where T : class
-        {
-            services.AddSingleton<IFactory<P0, P1, P2, P3, P4, P5, P6, T>, ResolveFactory<P0, P1, P2, P3, P4, P5, P6, T>>(x => new ResolveFactory<P0, P1, P2, P3, P4, P5, P6, T>(x));
-        }
-
-        private class ResolveFactory<P0, P1, P2, P3, P4, P5, P6, T> : IFactory<P0, P1, P2, P3, P4, P5, P6, T>
-			where T : class
-		{
-			private readonly IServiceProvider _serviceProvider;
-
-			public ResolveFactory(IServiceProvider serviceProvider)
-			{
-				_serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(_serviceProvider));
-			}
-
-			public T Create(P0 param0, P1 param1, P2 param2, P3 param3, P4 param4, P5 param5, P6 param6)
-			{
-                return _serviceProvider.ResolveWith<T>(parameters: new object[] { param0, param1, param2, param3, param4, param5, param6 });
-			}
-		}
-
-        public static void AddFactory<P0, P1, P2, P3, P4, P5, P6, P7, T>(this IServiceCollection services)
-            where T : class
-        {
-            services.AddSingleton<IFactory<P0, P1, P2, P3, P4, P5, P6, P7, T>, ResolveFactory<P0, P1, P2, P3, P4, P5, P6, P7, T>>(x => new ResolveFactory<P0, P1, P2, P3, P4, P5, P6, P7, T>(x));
-        }
-
-        private class ResolveFactory<P0, P1, P2, P3, P4, P5, P6, P7, T> : IFactory<P0, P1, P2, P3, P4, P5, P6, P7, T>
-			where T : class
-		{
-			private readonly IServiceProvider _serviceProvider;
-
-			public ResolveFactory(IServiceProvider serviceProvider)
-			{
-				_serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(_serviceProvider));
-			}
-
-			public T Create(P0 param0, P1 param1, P2 param2, P3 param3, P4 param4, P5 param5, P6 param6, P7 param7)
-			{
-                return _serviceProvider.ResolveWith<T>(parameters: new object[] { param0, param1, param2, param3, param4, param5, param6, param7 });
-			}
-		}
-
-        public static void AddFactory<P0, P1, P2, P3, P4, P5, P6, P7, P8, T>(this IServiceCollection services)
-            where T : class
-        {
-            services.AddSingleton<IFactory<P0, P1, P2, P3, P4, P5, P6, P7, P8, T>, ResolveFactory<P0, P1, P2, P3, P4, P5, P6, P7, P8, T>>(x => new ResolveFactory<P0, P1, P2, P3, P4, P5, P6, P7, P8, T>(x));
-        }
-
-        private class ResolveFactory<P0, P1, P2, P3, P4, P5, P6, P7, P8, T> : IFactory<P0, P1, P2, P3, P4, P5, P6, P7, P8, T>
-			where T : class
-		{
-			private readonly IServiceProvider _serviceProvider;
-
-			public ResolveFactory(IServiceProvider serviceProvider)
-			{
-				_serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(_serviceProvider));
-			}
-
-			public T Create(P0 param0, P1 param1, P2 param2, P3 param3, P4 param4, P5 param5, P6 param6, P7 param7, P8 param8)
-			{
-                return _serviceProvider.ResolveWith<T>(parameters: new object[] { param0, param1, param2, param3, param4, param5, param6, param7, param8 });
-			}
-		}
-
-        public static void AddFactory<P0, P1, P2, P3, P4, P5, P6, P7, P8, P9, T>(this IServiceCollection services)
-            where T : class
-        {
-            services.AddSingleton<IFactory<P0, P1, P2, P3, P4, P5, P6, P7, P8, P9, T>, ResolveFactory<P0, P1, P2, P3, P4, P5, P6, P7, P8, P9, T>>(x => new ResolveFactory<P0, P1, P2, P3, P4, P5, P6, P7, P8, P9, T>(x));
-        }
-
-        private class ResolveFactory<P0, P1, P2, P3, P4, P5, P6, P7, P8, P9, T> : IFactory<P0, P1, P2, P3, P4, P5, P6, P7, P8, P9, T>
-			where T : class
-		{
-			private readonly IServiceProvider _serviceProvider;
-
-			public ResolveFactory(IServiceProvider serviceProvider)
-			{
-				_serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(_serviceProvider));
-			}
-
-			public T Create(P0 param0, P1 param1, P2 param2, P3 param3, P4 param4, P5 param5, P6 param6, P7 param7, P8 param8, P9 param9)
-			{
-                return _serviceProvider.ResolveWith<T>(parameters: new object[] { param0, param1, param2, param3, param4, param5, param6, param7, param8, param9 });
-			}
-		}
-
 
         public static void AddFactoryFromMethod<T>(this IServiceCollection services, Func<IServiceProvider, T> func)
         {
@@ -512,6 +116,93 @@ namespace Common.Extensions.DI
             {
                 return _func.Invoke(_serviceProvider);
             }
+        }
+
+        public static IRegistrationBuilder<
+            IFactory<P0, TContract>, 
+            ConcreteReflectionActivatorData, 
+            SingleRegistrationStyle> AddFactoryTo<P0, TContract, TInstance>(this ContainerBuilder typeSourceSelector)
+            where TInstance : class, TContract
+            where TContract : notnull
+        {
+            return typeSourceSelector
+                .RegisterType<AutofacResolveFactoryContract<P0, TContract, TInstance>>()
+                .As<IFactory<P0, TContract>>();
+        }
+        
+        private class AutofacResolveFactoryContract<P0, TContract, TInstance> : IFactory<P0, TContract> 
+            where TInstance : class, TContract
+            where TContract : notnull
+        {
+            private readonly ILifetimeScope _scope;
+
+            public AutofacResolveFactoryContract(ILifetimeScope scope)
+            {
+                _scope = scope ?? throw new ArgumentNullException(nameof(scope));
+            }
+
+            public TContract Create(P0 param0)
+            {
+                return new ContainerWrapper(_scope).ResolveWith<TInstance>(parameters: [ param0 ]);
+            }
+        }
+
+        public static ILifetimeSelector AddFactoryTo<P0, TContract, TInstance>(this IAssemblySelector assemblySelector)
+            where TInstance : class, TContract
+        {
+            return assemblySelector
+                .FromAssemblyOf<ResolveFactoryContract<P0, TContract, TInstance>>()
+                .AddClasses(filter => filter.AssignableTo(typeof(ResolveFactoryContract<,,>)))
+                .AsSelf()
+                .AsImplementedInterfaces();
+        }
+
+        public static void AddFactoryTo<P0, TContract, TInstance>(this IServiceCollection services)
+            where TInstance : class, TContract
+        {
+            services.AddSingleton<IFactory<P0, TContract>, ResolveFactoryContract<P0, TContract, TInstance>>(x => new ResolveFactoryContract<P0, TContract, TInstance>(x));
+        }
+
+        public class ResolveFactoryContract<P0, TContract, TInstance> : IFactory<P0, TContract>
+			where TInstance : class, TContract
+		{
+			private readonly IServiceProvider _serviceProvider;
+
+			public ResolveFactoryContract(IServiceProvider serviceProvider)
+			{
+				_serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
+			}
+
+			public TContract Create(P0 param0)
+			{
+                return _serviceProvider.ResolveWith<TInstance>(parameters: new object[] { param0 });
+			}
+		}
+
+        public static IRegistrationBuilder<
+            IFactory<P0, TInstance>, 
+            ConcreteReflectionActivatorData, 
+            SingleRegistrationStyle> AddFactory<P0, TInstance>(this ContainerBuilder typeSourceSelector)
+            where TInstance : class
+        {
+            return typeSourceSelector
+                .RegisterType<AutofacResolveFactoryContract<P0, TInstance, TInstance>>()
+                .As<IFactory<P0, TInstance>>();
+        }
+
+		public static ILifetimeSelector AddFactory<P0, T>(this IAssemblySelector assemblySelector)
+            where T : class
+        {
+            return assemblySelector
+                .FromAssemblyOf<ResolveFactoryContract<P0, T, T>>()
+                .AddClass<ResolveFactoryContract<P0, T, T>>()
+                .As<IFactory<P0, T>>();
+        }
+
+        public static void AddFactory<P0, T>(this IServiceCollection services)
+            where T : class
+        {
+            services.AddSingleton<IFactory<P0, T>, ResolveFactoryContract<P0, T, T>>(x => new ResolveFactoryContract<P0, T, T>(x));
         }
 
         public static void AddFactoryFromMethod<P0, T>(this IServiceCollection services, Func<IServiceProvider, P0, T> func)
@@ -538,6 +229,93 @@ namespace Common.Extensions.DI
             }
         }
 
+        public static IRegistrationBuilder<
+            IFactory<P0, P1, TContract>, 
+            ConcreteReflectionActivatorData, 
+            SingleRegistrationStyle> AddFactoryTo<P0, P1, TContract, TInstance>(this ContainerBuilder typeSourceSelector)
+            where TInstance : class, TContract
+            where TContract : notnull
+        {
+            return typeSourceSelector
+                .RegisterType<AutofacResolveFactoryContract<P0, P1, TContract, TInstance>>()
+                .As<IFactory<P0, P1, TContract>>();
+        }
+        
+        private class AutofacResolveFactoryContract<P0, P1, TContract, TInstance> : IFactory<P0, P1, TContract> 
+            where TInstance : class, TContract
+            where TContract : notnull
+        {
+            private readonly ILifetimeScope _scope;
+
+            public AutofacResolveFactoryContract(ILifetimeScope scope)
+            {
+                _scope = scope ?? throw new ArgumentNullException(nameof(scope));
+            }
+
+            public TContract Create(P0 param0, P1 param1)
+            {
+                return new ContainerWrapper(_scope).ResolveWith<TInstance>(parameters: [ param0, param1 ]);
+            }
+        }
+
+        public static ILifetimeSelector AddFactoryTo<P0, P1, TContract, TInstance>(this IAssemblySelector assemblySelector)
+            where TInstance : class, TContract
+        {
+            return assemblySelector
+                .FromAssemblyOf<ResolveFactoryContract<P0, P1, TContract, TInstance>>()
+                .AddClasses(filter => filter.AssignableTo(typeof(ResolveFactoryContract<,,,>)))
+                .AsSelf()
+                .AsImplementedInterfaces();
+        }
+
+        public static void AddFactoryTo<P0, P1, TContract, TInstance>(this IServiceCollection services)
+            where TInstance : class, TContract
+        {
+            services.AddSingleton<IFactory<P0, P1, TContract>, ResolveFactoryContract<P0, P1, TContract, TInstance>>(x => new ResolveFactoryContract<P0, P1, TContract, TInstance>(x));
+        }
+
+        public class ResolveFactoryContract<P0, P1, TContract, TInstance> : IFactory<P0, P1, TContract>
+			where TInstance : class, TContract
+		{
+			private readonly IServiceProvider _serviceProvider;
+
+			public ResolveFactoryContract(IServiceProvider serviceProvider)
+			{
+				_serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
+			}
+
+			public TContract Create(P0 param0, P1 param1)
+			{
+                return _serviceProvider.ResolveWith<TInstance>(parameters: new object[] { param0, param1 });
+			}
+		}
+
+        public static IRegistrationBuilder<
+            IFactory<P0, P1, TInstance>, 
+            ConcreteReflectionActivatorData, 
+            SingleRegistrationStyle> AddFactory<P0, P1, TInstance>(this ContainerBuilder typeSourceSelector)
+            where TInstance : class
+        {
+            return typeSourceSelector
+                .RegisterType<AutofacResolveFactoryContract<P0, P1, TInstance, TInstance>>()
+                .As<IFactory<P0, P1, TInstance>>();
+        }
+
+		public static ILifetimeSelector AddFactory<P0, P1, T>(this IAssemblySelector assemblySelector)
+            where T : class
+        {
+            return assemblySelector
+                .FromAssemblyOf<ResolveFactoryContract<P0, P1, T, T>>()
+                .AddClass<ResolveFactoryContract<P0, P1, T, T>>()
+                .As<IFactory<P0, P1, T>>();
+        }
+
+        public static void AddFactory<P0, P1, T>(this IServiceCollection services)
+            where T : class
+        {
+            services.AddSingleton<IFactory<P0, P1, T>, ResolveFactoryContract<P0, P1, T, T>>(x => new ResolveFactoryContract<P0, P1, T, T>(x));
+        }
+
         public static void AddFactoryFromMethod<P0, P1, T>(this IServiceCollection services, Func<IServiceProvider, P0, P1, T> func)
         {
             services.AddSingleton<IFactory<P0, P1, T>, FactoryFromMethod<P0, P1, T>>(x => new FactoryFromMethod<P0, P1, T>(x, func));
@@ -560,6 +338,93 @@ namespace Common.Extensions.DI
             {
                 return _func.Invoke(_serviceProvider, param0, param1);
             }
+        }
+
+        public static IRegistrationBuilder<
+            IFactory<P0, P1, P2, TContract>, 
+            ConcreteReflectionActivatorData, 
+            SingleRegistrationStyle> AddFactoryTo<P0, P1, P2, TContract, TInstance>(this ContainerBuilder typeSourceSelector)
+            where TInstance : class, TContract
+            where TContract : notnull
+        {
+            return typeSourceSelector
+                .RegisterType<AutofacResolveFactoryContract<P0, P1, P2, TContract, TInstance>>()
+                .As<IFactory<P0, P1, P2, TContract>>();
+        }
+        
+        private class AutofacResolveFactoryContract<P0, P1, P2, TContract, TInstance> : IFactory<P0, P1, P2, TContract> 
+            where TInstance : class, TContract
+            where TContract : notnull
+        {
+            private readonly ILifetimeScope _scope;
+
+            public AutofacResolveFactoryContract(ILifetimeScope scope)
+            {
+                _scope = scope ?? throw new ArgumentNullException(nameof(scope));
+            }
+
+            public TContract Create(P0 param0, P1 param1, P2 param2)
+            {
+                return new ContainerWrapper(_scope).ResolveWith<TInstance>(parameters: [ param0, param1, param2 ]);
+            }
+        }
+
+        public static ILifetimeSelector AddFactoryTo<P0, P1, P2, TContract, TInstance>(this IAssemblySelector assemblySelector)
+            where TInstance : class, TContract
+        {
+            return assemblySelector
+                .FromAssemblyOf<ResolveFactoryContract<P0, P1, P2, TContract, TInstance>>()
+                .AddClasses(filter => filter.AssignableTo(typeof(ResolveFactoryContract<,,,,>)))
+                .AsSelf()
+                .AsImplementedInterfaces();
+        }
+
+        public static void AddFactoryTo<P0, P1, P2, TContract, TInstance>(this IServiceCollection services)
+            where TInstance : class, TContract
+        {
+            services.AddSingleton<IFactory<P0, P1, P2, TContract>, ResolveFactoryContract<P0, P1, P2, TContract, TInstance>>(x => new ResolveFactoryContract<P0, P1, P2, TContract, TInstance>(x));
+        }
+
+        public class ResolveFactoryContract<P0, P1, P2, TContract, TInstance> : IFactory<P0, P1, P2, TContract>
+			where TInstance : class, TContract
+		{
+			private readonly IServiceProvider _serviceProvider;
+
+			public ResolveFactoryContract(IServiceProvider serviceProvider)
+			{
+				_serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
+			}
+
+			public TContract Create(P0 param0, P1 param1, P2 param2)
+			{
+                return _serviceProvider.ResolveWith<TInstance>(parameters: new object[] { param0, param1, param2 });
+			}
+		}
+
+        public static IRegistrationBuilder<
+            IFactory<P0, P1, P2, TInstance>, 
+            ConcreteReflectionActivatorData, 
+            SingleRegistrationStyle> AddFactory<P0, P1, P2, TInstance>(this ContainerBuilder typeSourceSelector)
+            where TInstance : class
+        {
+            return typeSourceSelector
+                .RegisterType<AutofacResolveFactoryContract<P0, P1, P2, TInstance, TInstance>>()
+                .As<IFactory<P0, P1, P2, TInstance>>();
+        }
+
+		public static ILifetimeSelector AddFactory<P0, P1, P2, T>(this IAssemblySelector assemblySelector)
+            where T : class
+        {
+            return assemblySelector
+                .FromAssemblyOf<ResolveFactoryContract<P0, P1, P2, T, T>>()
+                .AddClass<ResolveFactoryContract<P0, P1, P2, T, T>>()
+                .As<IFactory<P0, P1, P2, T>>();
+        }
+
+        public static void AddFactory<P0, P1, P2, T>(this IServiceCollection services)
+            where T : class
+        {
+            services.AddSingleton<IFactory<P0, P1, P2, T>, ResolveFactoryContract<P0, P1, P2, T, T>>(x => new ResolveFactoryContract<P0, P1, P2, T, T>(x));
         }
 
         public static void AddFactoryFromMethod<P0, P1, P2, T>(this IServiceCollection services, Func<IServiceProvider, P0, P1, P2, T> func)
@@ -586,6 +451,93 @@ namespace Common.Extensions.DI
             }
         }
 
+        public static IRegistrationBuilder<
+            IFactory<P0, P1, P2, P3, TContract>, 
+            ConcreteReflectionActivatorData, 
+            SingleRegistrationStyle> AddFactoryTo<P0, P1, P2, P3, TContract, TInstance>(this ContainerBuilder typeSourceSelector)
+            where TInstance : class, TContract
+            where TContract : notnull
+        {
+            return typeSourceSelector
+                .RegisterType<AutofacResolveFactoryContract<P0, P1, P2, P3, TContract, TInstance>>()
+                .As<IFactory<P0, P1, P2, P3, TContract>>();
+        }
+        
+        private class AutofacResolveFactoryContract<P0, P1, P2, P3, TContract, TInstance> : IFactory<P0, P1, P2, P3, TContract> 
+            where TInstance : class, TContract
+            where TContract : notnull
+        {
+            private readonly ILifetimeScope _scope;
+
+            public AutofacResolveFactoryContract(ILifetimeScope scope)
+            {
+                _scope = scope ?? throw new ArgumentNullException(nameof(scope));
+            }
+
+            public TContract Create(P0 param0, P1 param1, P2 param2, P3 param3)
+            {
+                return new ContainerWrapper(_scope).ResolveWith<TInstance>(parameters: [ param0, param1, param2, param3 ]);
+            }
+        }
+
+        public static ILifetimeSelector AddFactoryTo<P0, P1, P2, P3, TContract, TInstance>(this IAssemblySelector assemblySelector)
+            where TInstance : class, TContract
+        {
+            return assemblySelector
+                .FromAssemblyOf<ResolveFactoryContract<P0, P1, P2, P3, TContract, TInstance>>()
+                .AddClasses(filter => filter.AssignableTo(typeof(ResolveFactoryContract<,,,,,>)))
+                .AsSelf()
+                .AsImplementedInterfaces();
+        }
+
+        public static void AddFactoryTo<P0, P1, P2, P3, TContract, TInstance>(this IServiceCollection services)
+            where TInstance : class, TContract
+        {
+            services.AddSingleton<IFactory<P0, P1, P2, P3, TContract>, ResolveFactoryContract<P0, P1, P2, P3, TContract, TInstance>>(x => new ResolveFactoryContract<P0, P1, P2, P3, TContract, TInstance>(x));
+        }
+
+        public class ResolveFactoryContract<P0, P1, P2, P3, TContract, TInstance> : IFactory<P0, P1, P2, P3, TContract>
+			where TInstance : class, TContract
+		{
+			private readonly IServiceProvider _serviceProvider;
+
+			public ResolveFactoryContract(IServiceProvider serviceProvider)
+			{
+				_serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
+			}
+
+			public TContract Create(P0 param0, P1 param1, P2 param2, P3 param3)
+			{
+                return _serviceProvider.ResolveWith<TInstance>(parameters: new object[] { param0, param1, param2, param3 });
+			}
+		}
+
+        public static IRegistrationBuilder<
+            IFactory<P0, P1, P2, P3, TInstance>, 
+            ConcreteReflectionActivatorData, 
+            SingleRegistrationStyle> AddFactory<P0, P1, P2, P3, TInstance>(this ContainerBuilder typeSourceSelector)
+            where TInstance : class
+        {
+            return typeSourceSelector
+                .RegisterType<AutofacResolveFactoryContract<P0, P1, P2, P3, TInstance, TInstance>>()
+                .As<IFactory<P0, P1, P2, P3, TInstance>>();
+        }
+
+		public static ILifetimeSelector AddFactory<P0, P1, P2, P3, T>(this IAssemblySelector assemblySelector)
+            where T : class
+        {
+            return assemblySelector
+                .FromAssemblyOf<ResolveFactoryContract<P0, P1, P2, P3, T, T>>()
+                .AddClass<ResolveFactoryContract<P0, P1, P2, P3, T, T>>()
+                .As<IFactory<P0, P1, P2, P3, T>>();
+        }
+
+        public static void AddFactory<P0, P1, P2, P3, T>(this IServiceCollection services)
+            where T : class
+        {
+            services.AddSingleton<IFactory<P0, P1, P2, P3, T>, ResolveFactoryContract<P0, P1, P2, P3, T, T>>(x => new ResolveFactoryContract<P0, P1, P2, P3, T, T>(x));
+        }
+
         public static void AddFactoryFromMethod<P0, P1, P2, P3, T>(this IServiceCollection services, Func<IServiceProvider, P0, P1, P2, P3, T> func)
         {
             services.AddSingleton<IFactory<P0, P1, P2, P3, T>, FactoryFromMethod<P0, P1, P2, P3, T>>(x => new FactoryFromMethod<P0, P1, P2, P3, T>(x, func));
@@ -608,6 +560,93 @@ namespace Common.Extensions.DI
             {
                 return _func.Invoke(_serviceProvider, param0, param1, param2, param3);
             }
+        }
+
+        public static IRegistrationBuilder<
+            IFactory<P0, P1, P2, P3, P4, TContract>, 
+            ConcreteReflectionActivatorData, 
+            SingleRegistrationStyle> AddFactoryTo<P0, P1, P2, P3, P4, TContract, TInstance>(this ContainerBuilder typeSourceSelector)
+            where TInstance : class, TContract
+            where TContract : notnull
+        {
+            return typeSourceSelector
+                .RegisterType<AutofacResolveFactoryContract<P0, P1, P2, P3, P4, TContract, TInstance>>()
+                .As<IFactory<P0, P1, P2, P3, P4, TContract>>();
+        }
+        
+        private class AutofacResolveFactoryContract<P0, P1, P2, P3, P4, TContract, TInstance> : IFactory<P0, P1, P2, P3, P4, TContract> 
+            where TInstance : class, TContract
+            where TContract : notnull
+        {
+            private readonly ILifetimeScope _scope;
+
+            public AutofacResolveFactoryContract(ILifetimeScope scope)
+            {
+                _scope = scope ?? throw new ArgumentNullException(nameof(scope));
+            }
+
+            public TContract Create(P0 param0, P1 param1, P2 param2, P3 param3, P4 param4)
+            {
+                return new ContainerWrapper(_scope).ResolveWith<TInstance>(parameters: [ param0, param1, param2, param3, param4 ]);
+            }
+        }
+
+        public static ILifetimeSelector AddFactoryTo<P0, P1, P2, P3, P4, TContract, TInstance>(this IAssemblySelector assemblySelector)
+            where TInstance : class, TContract
+        {
+            return assemblySelector
+                .FromAssemblyOf<ResolveFactoryContract<P0, P1, P2, P3, P4, TContract, TInstance>>()
+                .AddClasses(filter => filter.AssignableTo(typeof(ResolveFactoryContract<,,,,,,>)))
+                .AsSelf()
+                .AsImplementedInterfaces();
+        }
+
+        public static void AddFactoryTo<P0, P1, P2, P3, P4, TContract, TInstance>(this IServiceCollection services)
+            where TInstance : class, TContract
+        {
+            services.AddSingleton<IFactory<P0, P1, P2, P3, P4, TContract>, ResolveFactoryContract<P0, P1, P2, P3, P4, TContract, TInstance>>(x => new ResolveFactoryContract<P0, P1, P2, P3, P4, TContract, TInstance>(x));
+        }
+
+        public class ResolveFactoryContract<P0, P1, P2, P3, P4, TContract, TInstance> : IFactory<P0, P1, P2, P3, P4, TContract>
+			where TInstance : class, TContract
+		{
+			private readonly IServiceProvider _serviceProvider;
+
+			public ResolveFactoryContract(IServiceProvider serviceProvider)
+			{
+				_serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
+			}
+
+			public TContract Create(P0 param0, P1 param1, P2 param2, P3 param3, P4 param4)
+			{
+                return _serviceProvider.ResolveWith<TInstance>(parameters: new object[] { param0, param1, param2, param3, param4 });
+			}
+		}
+
+        public static IRegistrationBuilder<
+            IFactory<P0, P1, P2, P3, P4, TInstance>, 
+            ConcreteReflectionActivatorData, 
+            SingleRegistrationStyle> AddFactory<P0, P1, P2, P3, P4, TInstance>(this ContainerBuilder typeSourceSelector)
+            where TInstance : class
+        {
+            return typeSourceSelector
+                .RegisterType<AutofacResolveFactoryContract<P0, P1, P2, P3, P4, TInstance, TInstance>>()
+                .As<IFactory<P0, P1, P2, P3, P4, TInstance>>();
+        }
+
+		public static ILifetimeSelector AddFactory<P0, P1, P2, P3, P4, T>(this IAssemblySelector assemblySelector)
+            where T : class
+        {
+            return assemblySelector
+                .FromAssemblyOf<ResolveFactoryContract<P0, P1, P2, P3, P4, T, T>>()
+                .AddClass<ResolveFactoryContract<P0, P1, P2, P3, P4, T, T>>()
+                .As<IFactory<P0, P1, P2, P3, P4, T>>();
+        }
+
+        public static void AddFactory<P0, P1, P2, P3, P4, T>(this IServiceCollection services)
+            where T : class
+        {
+            services.AddSingleton<IFactory<P0, P1, P2, P3, P4, T>, ResolveFactoryContract<P0, P1, P2, P3, P4, T, T>>(x => new ResolveFactoryContract<P0, P1, P2, P3, P4, T, T>(x));
         }
 
         public static void AddFactoryFromMethod<P0, P1, P2, P3, P4, T>(this IServiceCollection services, Func<IServiceProvider, P0, P1, P2, P3, P4, T> func)
@@ -634,6 +673,93 @@ namespace Common.Extensions.DI
             }
         }
 
+        public static IRegistrationBuilder<
+            IFactory<P0, P1, P2, P3, P4, P5, TContract>, 
+            ConcreteReflectionActivatorData, 
+            SingleRegistrationStyle> AddFactoryTo<P0, P1, P2, P3, P4, P5, TContract, TInstance>(this ContainerBuilder typeSourceSelector)
+            where TInstance : class, TContract
+            where TContract : notnull
+        {
+            return typeSourceSelector
+                .RegisterType<AutofacResolveFactoryContract<P0, P1, P2, P3, P4, P5, TContract, TInstance>>()
+                .As<IFactory<P0, P1, P2, P3, P4, P5, TContract>>();
+        }
+        
+        private class AutofacResolveFactoryContract<P0, P1, P2, P3, P4, P5, TContract, TInstance> : IFactory<P0, P1, P2, P3, P4, P5, TContract> 
+            where TInstance : class, TContract
+            where TContract : notnull
+        {
+            private readonly ILifetimeScope _scope;
+
+            public AutofacResolveFactoryContract(ILifetimeScope scope)
+            {
+                _scope = scope ?? throw new ArgumentNullException(nameof(scope));
+            }
+
+            public TContract Create(P0 param0, P1 param1, P2 param2, P3 param3, P4 param4, P5 param5)
+            {
+                return new ContainerWrapper(_scope).ResolveWith<TInstance>(parameters: [ param0, param1, param2, param3, param4, param5 ]);
+            }
+        }
+
+        public static ILifetimeSelector AddFactoryTo<P0, P1, P2, P3, P4, P5, TContract, TInstance>(this IAssemblySelector assemblySelector)
+            where TInstance : class, TContract
+        {
+            return assemblySelector
+                .FromAssemblyOf<ResolveFactoryContract<P0, P1, P2, P3, P4, P5, TContract, TInstance>>()
+                .AddClasses(filter => filter.AssignableTo(typeof(ResolveFactoryContract<,,,,,,,>)))
+                .AsSelf()
+                .AsImplementedInterfaces();
+        }
+
+        public static void AddFactoryTo<P0, P1, P2, P3, P4, P5, TContract, TInstance>(this IServiceCollection services)
+            where TInstance : class, TContract
+        {
+            services.AddSingleton<IFactory<P0, P1, P2, P3, P4, P5, TContract>, ResolveFactoryContract<P0, P1, P2, P3, P4, P5, TContract, TInstance>>(x => new ResolveFactoryContract<P0, P1, P2, P3, P4, P5, TContract, TInstance>(x));
+        }
+
+        public class ResolveFactoryContract<P0, P1, P2, P3, P4, P5, TContract, TInstance> : IFactory<P0, P1, P2, P3, P4, P5, TContract>
+			where TInstance : class, TContract
+		{
+			private readonly IServiceProvider _serviceProvider;
+
+			public ResolveFactoryContract(IServiceProvider serviceProvider)
+			{
+				_serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
+			}
+
+			public TContract Create(P0 param0, P1 param1, P2 param2, P3 param3, P4 param4, P5 param5)
+			{
+                return _serviceProvider.ResolveWith<TInstance>(parameters: new object[] { param0, param1, param2, param3, param4, param5 });
+			}
+		}
+
+        public static IRegistrationBuilder<
+            IFactory<P0, P1, P2, P3, P4, P5, TInstance>, 
+            ConcreteReflectionActivatorData, 
+            SingleRegistrationStyle> AddFactory<P0, P1, P2, P3, P4, P5, TInstance>(this ContainerBuilder typeSourceSelector)
+            where TInstance : class
+        {
+            return typeSourceSelector
+                .RegisterType<AutofacResolveFactoryContract<P0, P1, P2, P3, P4, P5, TInstance, TInstance>>()
+                .As<IFactory<P0, P1, P2, P3, P4, P5, TInstance>>();
+        }
+
+		public static ILifetimeSelector AddFactory<P0, P1, P2, P3, P4, P5, T>(this IAssemblySelector assemblySelector)
+            where T : class
+        {
+            return assemblySelector
+                .FromAssemblyOf<ResolveFactoryContract<P0, P1, P2, P3, P4, P5, T, T>>()
+                .AddClass<ResolveFactoryContract<P0, P1, P2, P3, P4, P5, T, T>>()
+                .As<IFactory<P0, P1, P2, P3, P4, P5, T>>();
+        }
+
+        public static void AddFactory<P0, P1, P2, P3, P4, P5, T>(this IServiceCollection services)
+            where T : class
+        {
+            services.AddSingleton<IFactory<P0, P1, P2, P3, P4, P5, T>, ResolveFactoryContract<P0, P1, P2, P3, P4, P5, T, T>>(x => new ResolveFactoryContract<P0, P1, P2, P3, P4, P5, T, T>(x));
+        }
+
         public static void AddFactoryFromMethod<P0, P1, P2, P3, P4, P5, T>(this IServiceCollection services, Func<IServiceProvider, P0, P1, P2, P3, P4, P5, T> func)
         {
             services.AddSingleton<IFactory<P0, P1, P2, P3, P4, P5, T>, FactoryFromMethod<P0, P1, P2, P3, P4, P5, T>>(x => new FactoryFromMethod<P0, P1, P2, P3, P4, P5, T>(x, func));
@@ -656,6 +782,93 @@ namespace Common.Extensions.DI
             {
                 return _func.Invoke(_serviceProvider, param0, param1, param2, param3, param4, param5);
             }
+        }
+
+        public static IRegistrationBuilder<
+            IFactory<P0, P1, P2, P3, P4, P5, P6, TContract>, 
+            ConcreteReflectionActivatorData, 
+            SingleRegistrationStyle> AddFactoryTo<P0, P1, P2, P3, P4, P5, P6, TContract, TInstance>(this ContainerBuilder typeSourceSelector)
+            where TInstance : class, TContract
+            where TContract : notnull
+        {
+            return typeSourceSelector
+                .RegisterType<AutofacResolveFactoryContract<P0, P1, P2, P3, P4, P5, P6, TContract, TInstance>>()
+                .As<IFactory<P0, P1, P2, P3, P4, P5, P6, TContract>>();
+        }
+        
+        private class AutofacResolveFactoryContract<P0, P1, P2, P3, P4, P5, P6, TContract, TInstance> : IFactory<P0, P1, P2, P3, P4, P5, P6, TContract> 
+            where TInstance : class, TContract
+            where TContract : notnull
+        {
+            private readonly ILifetimeScope _scope;
+
+            public AutofacResolveFactoryContract(ILifetimeScope scope)
+            {
+                _scope = scope ?? throw new ArgumentNullException(nameof(scope));
+            }
+
+            public TContract Create(P0 param0, P1 param1, P2 param2, P3 param3, P4 param4, P5 param5, P6 param6)
+            {
+                return new ContainerWrapper(_scope).ResolveWith<TInstance>(parameters: [ param0, param1, param2, param3, param4, param5, param6 ]);
+            }
+        }
+
+        public static ILifetimeSelector AddFactoryTo<P0, P1, P2, P3, P4, P5, P6, TContract, TInstance>(this IAssemblySelector assemblySelector)
+            where TInstance : class, TContract
+        {
+            return assemblySelector
+                .FromAssemblyOf<ResolveFactoryContract<P0, P1, P2, P3, P4, P5, P6, TContract, TInstance>>()
+                .AddClasses(filter => filter.AssignableTo(typeof(ResolveFactoryContract<,,,,,,,,>)))
+                .AsSelf()
+                .AsImplementedInterfaces();
+        }
+
+        public static void AddFactoryTo<P0, P1, P2, P3, P4, P5, P6, TContract, TInstance>(this IServiceCollection services)
+            where TInstance : class, TContract
+        {
+            services.AddSingleton<IFactory<P0, P1, P2, P3, P4, P5, P6, TContract>, ResolveFactoryContract<P0, P1, P2, P3, P4, P5, P6, TContract, TInstance>>(x => new ResolveFactoryContract<P0, P1, P2, P3, P4, P5, P6, TContract, TInstance>(x));
+        }
+
+        public class ResolveFactoryContract<P0, P1, P2, P3, P4, P5, P6, TContract, TInstance> : IFactory<P0, P1, P2, P3, P4, P5, P6, TContract>
+			where TInstance : class, TContract
+		{
+			private readonly IServiceProvider _serviceProvider;
+
+			public ResolveFactoryContract(IServiceProvider serviceProvider)
+			{
+				_serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
+			}
+
+			public TContract Create(P0 param0, P1 param1, P2 param2, P3 param3, P4 param4, P5 param5, P6 param6)
+			{
+                return _serviceProvider.ResolveWith<TInstance>(parameters: new object[] { param0, param1, param2, param3, param4, param5, param6 });
+			}
+		}
+
+        public static IRegistrationBuilder<
+            IFactory<P0, P1, P2, P3, P4, P5, P6, TInstance>, 
+            ConcreteReflectionActivatorData, 
+            SingleRegistrationStyle> AddFactory<P0, P1, P2, P3, P4, P5, P6, TInstance>(this ContainerBuilder typeSourceSelector)
+            where TInstance : class
+        {
+            return typeSourceSelector
+                .RegisterType<AutofacResolveFactoryContract<P0, P1, P2, P3, P4, P5, P6, TInstance, TInstance>>()
+                .As<IFactory<P0, P1, P2, P3, P4, P5, P6, TInstance>>();
+        }
+
+		public static ILifetimeSelector AddFactory<P0, P1, P2, P3, P4, P5, P6, T>(this IAssemblySelector assemblySelector)
+            where T : class
+        {
+            return assemblySelector
+                .FromAssemblyOf<ResolveFactoryContract<P0, P1, P2, P3, P4, P5, P6, T, T>>()
+                .AddClass<ResolveFactoryContract<P0, P1, P2, P3, P4, P5, P6, T, T>>()
+                .As<IFactory<P0, P1, P2, P3, P4, P5, P6, T>>();
+        }
+
+        public static void AddFactory<P0, P1, P2, P3, P4, P5, P6, T>(this IServiceCollection services)
+            where T : class
+        {
+            services.AddSingleton<IFactory<P0, P1, P2, P3, P4, P5, P6, T>, ResolveFactoryContract<P0, P1, P2, P3, P4, P5, P6, T, T>>(x => new ResolveFactoryContract<P0, P1, P2, P3, P4, P5, P6, T, T>(x));
         }
 
         public static void AddFactoryFromMethod<P0, P1, P2, P3, P4, P5, P6, T>(this IServiceCollection services, Func<IServiceProvider, P0, P1, P2, P3, P4, P5, P6, T> func)
@@ -682,6 +895,93 @@ namespace Common.Extensions.DI
             }
         }
 
+        public static IRegistrationBuilder<
+            IFactory<P0, P1, P2, P3, P4, P5, P6, P7, TContract>, 
+            ConcreteReflectionActivatorData, 
+            SingleRegistrationStyle> AddFactoryTo<P0, P1, P2, P3, P4, P5, P6, P7, TContract, TInstance>(this ContainerBuilder typeSourceSelector)
+            where TInstance : class, TContract
+            where TContract : notnull
+        {
+            return typeSourceSelector
+                .RegisterType<AutofacResolveFactoryContract<P0, P1, P2, P3, P4, P5, P6, P7, TContract, TInstance>>()
+                .As<IFactory<P0, P1, P2, P3, P4, P5, P6, P7, TContract>>();
+        }
+        
+        private class AutofacResolveFactoryContract<P0, P1, P2, P3, P4, P5, P6, P7, TContract, TInstance> : IFactory<P0, P1, P2, P3, P4, P5, P6, P7, TContract> 
+            where TInstance : class, TContract
+            where TContract : notnull
+        {
+            private readonly ILifetimeScope _scope;
+
+            public AutofacResolveFactoryContract(ILifetimeScope scope)
+            {
+                _scope = scope ?? throw new ArgumentNullException(nameof(scope));
+            }
+
+            public TContract Create(P0 param0, P1 param1, P2 param2, P3 param3, P4 param4, P5 param5, P6 param6, P7 param7)
+            {
+                return new ContainerWrapper(_scope).ResolveWith<TInstance>(parameters: [ param0, param1, param2, param3, param4, param5, param6, param7 ]);
+            }
+        }
+
+        public static ILifetimeSelector AddFactoryTo<P0, P1, P2, P3, P4, P5, P6, P7, TContract, TInstance>(this IAssemblySelector assemblySelector)
+            where TInstance : class, TContract
+        {
+            return assemblySelector
+                .FromAssemblyOf<ResolveFactoryContract<P0, P1, P2, P3, P4, P5, P6, P7, TContract, TInstance>>()
+                .AddClasses(filter => filter.AssignableTo(typeof(ResolveFactoryContract<,,,,,,,,,>)))
+                .AsSelf()
+                .AsImplementedInterfaces();
+        }
+
+        public static void AddFactoryTo<P0, P1, P2, P3, P4, P5, P6, P7, TContract, TInstance>(this IServiceCollection services)
+            where TInstance : class, TContract
+        {
+            services.AddSingleton<IFactory<P0, P1, P2, P3, P4, P5, P6, P7, TContract>, ResolveFactoryContract<P0, P1, P2, P3, P4, P5, P6, P7, TContract, TInstance>>(x => new ResolveFactoryContract<P0, P1, P2, P3, P4, P5, P6, P7, TContract, TInstance>(x));
+        }
+
+        public class ResolveFactoryContract<P0, P1, P2, P3, P4, P5, P6, P7, TContract, TInstance> : IFactory<P0, P1, P2, P3, P4, P5, P6, P7, TContract>
+			where TInstance : class, TContract
+		{
+			private readonly IServiceProvider _serviceProvider;
+
+			public ResolveFactoryContract(IServiceProvider serviceProvider)
+			{
+				_serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
+			}
+
+			public TContract Create(P0 param0, P1 param1, P2 param2, P3 param3, P4 param4, P5 param5, P6 param6, P7 param7)
+			{
+                return _serviceProvider.ResolveWith<TInstance>(parameters: new object[] { param0, param1, param2, param3, param4, param5, param6, param7 });
+			}
+		}
+
+        public static IRegistrationBuilder<
+            IFactory<P0, P1, P2, P3, P4, P5, P6, P7, TInstance>, 
+            ConcreteReflectionActivatorData, 
+            SingleRegistrationStyle> AddFactory<P0, P1, P2, P3, P4, P5, P6, P7, TInstance>(this ContainerBuilder typeSourceSelector)
+            where TInstance : class
+        {
+            return typeSourceSelector
+                .RegisterType<AutofacResolveFactoryContract<P0, P1, P2, P3, P4, P5, P6, P7, TInstance, TInstance>>()
+                .As<IFactory<P0, P1, P2, P3, P4, P5, P6, P7, TInstance>>();
+        }
+
+		public static ILifetimeSelector AddFactory<P0, P1, P2, P3, P4, P5, P6, P7, T>(this IAssemblySelector assemblySelector)
+            where T : class
+        {
+            return assemblySelector
+                .FromAssemblyOf<ResolveFactoryContract<P0, P1, P2, P3, P4, P5, P6, P7, T, T>>()
+                .AddClass<ResolveFactoryContract<P0, P1, P2, P3, P4, P5, P6, P7, T, T>>()
+                .As<IFactory<P0, P1, P2, P3, P4, P5, P6, P7, T>>();
+        }
+
+        public static void AddFactory<P0, P1, P2, P3, P4, P5, P6, P7, T>(this IServiceCollection services)
+            where T : class
+        {
+            services.AddSingleton<IFactory<P0, P1, P2, P3, P4, P5, P6, P7, T>, ResolveFactoryContract<P0, P1, P2, P3, P4, P5, P6, P7, T, T>>(x => new ResolveFactoryContract<P0, P1, P2, P3, P4, P5, P6, P7, T, T>(x));
+        }
+
         public static void AddFactoryFromMethod<P0, P1, P2, P3, P4, P5, P6, P7, T>(this IServiceCollection services, Func<IServiceProvider, P0, P1, P2, P3, P4, P5, P6, P7, T> func)
         {
             services.AddSingleton<IFactory<P0, P1, P2, P3, P4, P5, P6, P7, T>, FactoryFromMethod<P0, P1, P2, P3, P4, P5, P6, P7, T>>(x => new FactoryFromMethod<P0, P1, P2, P3, P4, P5, P6, P7, T>(x, func));
@@ -706,6 +1006,93 @@ namespace Common.Extensions.DI
             }
         }
 
+        public static IRegistrationBuilder<
+            IFactory<P0, P1, P2, P3, P4, P5, P6, P7, P8, TContract>, 
+            ConcreteReflectionActivatorData, 
+            SingleRegistrationStyle> AddFactoryTo<P0, P1, P2, P3, P4, P5, P6, P7, P8, TContract, TInstance>(this ContainerBuilder typeSourceSelector)
+            where TInstance : class, TContract
+            where TContract : notnull
+        {
+            return typeSourceSelector
+                .RegisterType<AutofacResolveFactoryContract<P0, P1, P2, P3, P4, P5, P6, P7, P8, TContract, TInstance>>()
+                .As<IFactory<P0, P1, P2, P3, P4, P5, P6, P7, P8, TContract>>();
+        }
+        
+        private class AutofacResolveFactoryContract<P0, P1, P2, P3, P4, P5, P6, P7, P8, TContract, TInstance> : IFactory<P0, P1, P2, P3, P4, P5, P6, P7, P8, TContract> 
+            where TInstance : class, TContract
+            where TContract : notnull
+        {
+            private readonly ILifetimeScope _scope;
+
+            public AutofacResolveFactoryContract(ILifetimeScope scope)
+            {
+                _scope = scope ?? throw new ArgumentNullException(nameof(scope));
+            }
+
+            public TContract Create(P0 param0, P1 param1, P2 param2, P3 param3, P4 param4, P5 param5, P6 param6, P7 param7, P8 param8)
+            {
+                return new ContainerWrapper(_scope).ResolveWith<TInstance>(parameters: [ param0, param1, param2, param3, param4, param5, param6, param7, param8 ]);
+            }
+        }
+
+        public static ILifetimeSelector AddFactoryTo<P0, P1, P2, P3, P4, P5, P6, P7, P8, TContract, TInstance>(this IAssemblySelector assemblySelector)
+            where TInstance : class, TContract
+        {
+            return assemblySelector
+                .FromAssemblyOf<ResolveFactoryContract<P0, P1, P2, P3, P4, P5, P6, P7, P8, TContract, TInstance>>()
+                .AddClasses(filter => filter.AssignableTo(typeof(ResolveFactoryContract<,,,,,,,,,,>)))
+                .AsSelf()
+                .AsImplementedInterfaces();
+        }
+
+        public static void AddFactoryTo<P0, P1, P2, P3, P4, P5, P6, P7, P8, TContract, TInstance>(this IServiceCollection services)
+            where TInstance : class, TContract
+        {
+            services.AddSingleton<IFactory<P0, P1, P2, P3, P4, P5, P6, P7, P8, TContract>, ResolveFactoryContract<P0, P1, P2, P3, P4, P5, P6, P7, P8, TContract, TInstance>>(x => new ResolveFactoryContract<P0, P1, P2, P3, P4, P5, P6, P7, P8, TContract, TInstance>(x));
+        }
+
+        public class ResolveFactoryContract<P0, P1, P2, P3, P4, P5, P6, P7, P8, TContract, TInstance> : IFactory<P0, P1, P2, P3, P4, P5, P6, P7, P8, TContract>
+			where TInstance : class, TContract
+		{
+			private readonly IServiceProvider _serviceProvider;
+
+			public ResolveFactoryContract(IServiceProvider serviceProvider)
+			{
+				_serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
+			}
+
+			public TContract Create(P0 param0, P1 param1, P2 param2, P3 param3, P4 param4, P5 param5, P6 param6, P7 param7, P8 param8)
+			{
+                return _serviceProvider.ResolveWith<TInstance>(parameters: new object[] { param0, param1, param2, param3, param4, param5, param6, param7, param8 });
+			}
+		}
+
+        public static IRegistrationBuilder<
+            IFactory<P0, P1, P2, P3, P4, P5, P6, P7, P8, TInstance>, 
+            ConcreteReflectionActivatorData, 
+            SingleRegistrationStyle> AddFactory<P0, P1, P2, P3, P4, P5, P6, P7, P8, TInstance>(this ContainerBuilder typeSourceSelector)
+            where TInstance : class
+        {
+            return typeSourceSelector
+                .RegisterType<AutofacResolveFactoryContract<P0, P1, P2, P3, P4, P5, P6, P7, P8, TInstance, TInstance>>()
+                .As<IFactory<P0, P1, P2, P3, P4, P5, P6, P7, P8, TInstance>>();
+        }
+
+		public static ILifetimeSelector AddFactory<P0, P1, P2, P3, P4, P5, P6, P7, P8, T>(this IAssemblySelector assemblySelector)
+            where T : class
+        {
+            return assemblySelector
+                .FromAssemblyOf<ResolveFactoryContract<P0, P1, P2, P3, P4, P5, P6, P7, P8, T, T>>()
+                .AddClass<ResolveFactoryContract<P0, P1, P2, P3, P4, P5, P6, P7, P8, T, T>>()
+                .As<IFactory<P0, P1, P2, P3, P4, P5, P6, P7, P8, T>>();
+        }
+
+        public static void AddFactory<P0, P1, P2, P3, P4, P5, P6, P7, P8, T>(this IServiceCollection services)
+            where T : class
+        {
+            services.AddSingleton<IFactory<P0, P1, P2, P3, P4, P5, P6, P7, P8, T>, ResolveFactoryContract<P0, P1, P2, P3, P4, P5, P6, P7, P8, T, T>>(x => new ResolveFactoryContract<P0, P1, P2, P3, P4, P5, P6, P7, P8, T, T>(x));
+        }
+
         public static void AddFactoryFromMethod<P0, P1, P2, P3, P4, P5, P6, P7, P8, T>(this IServiceCollection services, Func<IServiceProvider, P0, P1, P2, P3, P4, P5, P6, P7, P8, T> func)
         {
             services.AddSingleton<IFactory<P0, P1, P2, P3, P4, P5, P6, P7, P8, T>, FactoryFromMethod<P0, P1, P2, P3, P4, P5, P6, P7, P8, T>>(x => new FactoryFromMethod<P0, P1, P2, P3, P4, P5, P6, P7, P8, T>(x, func));
@@ -728,6 +1115,93 @@ namespace Common.Extensions.DI
             {
                 return _func.Invoke(_serviceProvider, param0, param1, param2, param3, param4, param5, param6, param7, param8);
             }
+        }
+
+        public static IRegistrationBuilder<
+            IFactory<P0, P1, P2, P3, P4, P5, P6, P7, P8, P9, TContract>, 
+            ConcreteReflectionActivatorData, 
+            SingleRegistrationStyle> AddFactoryTo<P0, P1, P2, P3, P4, P5, P6, P7, P8, P9, TContract, TInstance>(this ContainerBuilder typeSourceSelector)
+            where TInstance : class, TContract
+            where TContract : notnull
+        {
+            return typeSourceSelector
+                .RegisterType<AutofacResolveFactoryContract<P0, P1, P2, P3, P4, P5, P6, P7, P8, P9, TContract, TInstance>>()
+                .As<IFactory<P0, P1, P2, P3, P4, P5, P6, P7, P8, P9, TContract>>();
+        }
+        
+        private class AutofacResolveFactoryContract<P0, P1, P2, P3, P4, P5, P6, P7, P8, P9, TContract, TInstance> : IFactory<P0, P1, P2, P3, P4, P5, P6, P7, P8, P9, TContract> 
+            where TInstance : class, TContract
+            where TContract : notnull
+        {
+            private readonly ILifetimeScope _scope;
+
+            public AutofacResolveFactoryContract(ILifetimeScope scope)
+            {
+                _scope = scope ?? throw new ArgumentNullException(nameof(scope));
+            }
+
+            public TContract Create(P0 param0, P1 param1, P2 param2, P3 param3, P4 param4, P5 param5, P6 param6, P7 param7, P8 param8, P9 param9)
+            {
+                return new ContainerWrapper(_scope).ResolveWith<TInstance>(parameters: [ param0, param1, param2, param3, param4, param5, param6, param7, param8, param9 ]);
+            }
+        }
+
+        public static ILifetimeSelector AddFactoryTo<P0, P1, P2, P3, P4, P5, P6, P7, P8, P9, TContract, TInstance>(this IAssemblySelector assemblySelector)
+            where TInstance : class, TContract
+        {
+            return assemblySelector
+                .FromAssemblyOf<ResolveFactoryContract<P0, P1, P2, P3, P4, P5, P6, P7, P8, P9, TContract, TInstance>>()
+                .AddClasses(filter => filter.AssignableTo(typeof(ResolveFactoryContract<,,,,,,,,,,,>)))
+                .AsSelf()
+                .AsImplementedInterfaces();
+        }
+
+        public static void AddFactoryTo<P0, P1, P2, P3, P4, P5, P6, P7, P8, P9, TContract, TInstance>(this IServiceCollection services)
+            where TInstance : class, TContract
+        {
+            services.AddSingleton<IFactory<P0, P1, P2, P3, P4, P5, P6, P7, P8, P9, TContract>, ResolveFactoryContract<P0, P1, P2, P3, P4, P5, P6, P7, P8, P9, TContract, TInstance>>(x => new ResolveFactoryContract<P0, P1, P2, P3, P4, P5, P6, P7, P8, P9, TContract, TInstance>(x));
+        }
+
+        public class ResolveFactoryContract<P0, P1, P2, P3, P4, P5, P6, P7, P8, P9, TContract, TInstance> : IFactory<P0, P1, P2, P3, P4, P5, P6, P7, P8, P9, TContract>
+			where TInstance : class, TContract
+		{
+			private readonly IServiceProvider _serviceProvider;
+
+			public ResolveFactoryContract(IServiceProvider serviceProvider)
+			{
+				_serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
+			}
+
+			public TContract Create(P0 param0, P1 param1, P2 param2, P3 param3, P4 param4, P5 param5, P6 param6, P7 param7, P8 param8, P9 param9)
+			{
+                return _serviceProvider.ResolveWith<TInstance>(parameters: new object[] { param0, param1, param2, param3, param4, param5, param6, param7, param8, param9 });
+			}
+		}
+
+        public static IRegistrationBuilder<
+            IFactory<P0, P1, P2, P3, P4, P5, P6, P7, P8, P9, TInstance>, 
+            ConcreteReflectionActivatorData, 
+            SingleRegistrationStyle> AddFactory<P0, P1, P2, P3, P4, P5, P6, P7, P8, P9, TInstance>(this ContainerBuilder typeSourceSelector)
+            where TInstance : class
+        {
+            return typeSourceSelector
+                .RegisterType<AutofacResolveFactoryContract<P0, P1, P2, P3, P4, P5, P6, P7, P8, P9, TInstance, TInstance>>()
+                .As<IFactory<P0, P1, P2, P3, P4, P5, P6, P7, P8, P9, TInstance>>();
+        }
+
+		public static ILifetimeSelector AddFactory<P0, P1, P2, P3, P4, P5, P6, P7, P8, P9, T>(this IAssemblySelector assemblySelector)
+            where T : class
+        {
+            return assemblySelector
+                .FromAssemblyOf<ResolveFactoryContract<P0, P1, P2, P3, P4, P5, P6, P7, P8, P9, T, T>>()
+                .AddClass<ResolveFactoryContract<P0, P1, P2, P3, P4, P5, P6, P7, P8, P9, T, T>>()
+                .As<IFactory<P0, P1, P2, P3, P4, P5, P6, P7, P8, P9, T>>();
+        }
+
+        public static void AddFactory<P0, P1, P2, P3, P4, P5, P6, P7, P8, P9, T>(this IServiceCollection services)
+            where T : class
+        {
+            services.AddSingleton<IFactory<P0, P1, P2, P3, P4, P5, P6, P7, P8, P9, T>, ResolveFactoryContract<P0, P1, P2, P3, P4, P5, P6, P7, P8, P9, T, T>>(x => new ResolveFactoryContract<P0, P1, P2, P3, P4, P5, P6, P7, P8, P9, T, T>(x));
         }
 
         public static void AddFactoryFromMethod<P0, P1, P2, P3, P4, P5, P6, P7, P8, P9, T>(this IServiceCollection services, Func<IServiceProvider, P0, P1, P2, P3, P4, P5, P6, P7, P8, P9, T> func)

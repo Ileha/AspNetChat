@@ -5,6 +5,8 @@ using Microsoft.Extensions.FileProviders;
 using System.Net;
 using System.Text;
 using AspNetChat.Core.Services;
+using Autofac;
+using Autofac.Extensions.DependencyInjection;
 using Chat;
 using Chat.Interfaces.Services;
 using Common.Extensions.DI;
@@ -91,13 +93,18 @@ public class Program
 
 		LoadJsons(builder, options);
 
-		new MainInstaller(builder.Services).Install();
-
-		new ChatInstaller(builder.Services).Install();
-
-		var dbConnection = options.DataBaseConnection.ToArray();
-		new MongoInstaller(builder.Services, dbConnection[0], dbConnection[1]).Install();
-
+		builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory());
+		
+		builder.Host.ConfigureContainer<ContainerBuilder>(containerBuilder =>
+		{
+			new MainInstaller(containerBuilder).Install();
+			
+			new ChatInstaller(containerBuilder).Install();
+			
+			var dbConnection = options.DataBaseConnection.ToArray();
+			new MongoInstaller(containerBuilder, dbConnection[0], dbConnection[1]).Install();
+		});
+		
 		// Add services to the container.
 		builder.Services.AddRazorPages();
 			
@@ -233,12 +240,13 @@ public class Program
 		// app.UseAuthorization();
 			
 		app.MapRazorPages();
+		
+		app.Run();
 
-		var appDecoratorFactory = app.Services.GetService<IFactory<WebApplication, App>>()!;
-		using var appDecorator = appDecoratorFactory.Create(app);
-				
-		appDecorator.Initialize();
-				
-		appDecorator.Run();
+		// var appDecoratorFactory = app.Services.GetService<IFactory<WebApplication, App>>()!;
+		// using var appDecorator = appDecoratorFactory.Create(app);
+		// 		
+		// appDecorator.Initialize();
+		// appDecorator.Run();
 	}
 }

@@ -3,11 +3,11 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Common.Extensions.DI;
 
-public abstract class InstallerBase : IInstaller
+public abstract class ServiceCollectionInstallerBase : IInstaller
 {
     protected readonly IServiceCollection Services;
 
-    protected InstallerBase(IServiceCollection services)
+    protected ServiceCollectionInstallerBase(IServiceCollection services)
     {
         Services = services ?? throw new ArgumentNullException(nameof(services));
     }

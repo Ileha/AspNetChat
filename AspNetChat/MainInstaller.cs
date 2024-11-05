@@ -1,21 +1,28 @@
 ﻿using AspNetChat.Core.Services;
-using AspNetChat.Core.Services.System;
+using Autofac;
 using Common.Extensions.DI;
 
 namespace AspNetChat;
 
-public class MainInstaller : InstallerBase
+public class MainInstaller : AutofacInstallerBase
 {
-    public MainInstaller(IServiceCollection services) 
-        : base(services)
+    public MainInstaller(ContainerBuilder container) 
+        : base(container)
     {
     }
 
     public override void Install()
     {
-        Services.AddSingleton<DisposeService>();
-        Services.AddSingleton<InitializeService>();
-        
-        Services.AddFactory<WebApplication, App>();
+        // Builder
+        //     .RegisterType<DisposeService>()
+        //     .SingleInstance();
+        //
+        // Builder
+        //     .RegisterType<InitializeService>()
+        //     .SingleInstance();
+
+        // Builder
+        //     .AddFactory<WebApplication, App>()
+        //     .SingleInstance();
     }
 }
