@@ -33,6 +33,6 @@ public class DisconnectionService : IDisconnectionService
 			return;
 		}
 
-		userAndChatResult.chat.DisconnectedParticipant((Identifiable) userGuid);
+		await userAndChatResult.chat.DisconnectedParticipant((Identifiable) userGuid);
 	}
 }

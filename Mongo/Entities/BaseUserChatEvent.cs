@@ -1,4 +1,4 @@
-﻿using Mongo.Inerfaces;
+﻿using Mongo.Interfaces;
 using MongoDB.Bson.Serialization.Attributes;
 
 namespace Mongo.Entities

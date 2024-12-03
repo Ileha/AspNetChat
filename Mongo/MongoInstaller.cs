@@ -3,8 +3,10 @@ using Chat.Interfaces.Services.Storage;
 using Common.Extensions.DI;
 using Common.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Mongo.Common;
 using Mongo.Common.Converter;
 using Mongo.EntityFramework;
+using Mongo.Interfaces;
 
 namespace Mongo;
 
@@ -33,6 +35,11 @@ public class MongoInstaller : AutofacInstallerBase
 			.WithParameters([
 				new TypedParameter(typeof(DbContextOptions), optionBuilder.Options)
 			])
+			.InstancePerLifetimeScope();
+		
+		Builder
+			.RegisterType<DataBaseTransaction<EntityFrameworkDbContext>>()
+			.As<IDataBaseTransaction<EntityFrameworkDbContext>>()
 			.InstancePerLifetimeScope();
 
 		Builder

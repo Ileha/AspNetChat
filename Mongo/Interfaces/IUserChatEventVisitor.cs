@@ -1,6 +1,6 @@
 ﻿using Mongo.Entities;
 
-namespace Mongo.Inerfaces
+namespace Mongo.Interfaces
 {
 	public interface IUserChatEventVisitor
 	{

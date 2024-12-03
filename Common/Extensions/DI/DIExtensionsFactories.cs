@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using Scrutor;
 using Autofac;
 using Autofac.Builder;
 
@@ -36,16 +35,6 @@ namespace Common.Extensions.DI
             }
         }
 
-        public static ILifetimeSelector AddFactoryTo<TContract, TInstance>(this IAssemblySelector assemblySelector)
-            where TInstance : class, TContract
-        {
-            return assemblySelector
-                .FromAssemblyOf<ResolveFactoryContract<TContract, TInstance>>()
-                .AddClasses(filter => filter.AssignableTo(typeof(ResolveFactoryContract<,>)))
-                .AsSelf()
-                .AsImplementedInterfaces();
-        }
-
         public static void AddFactoryTo<TContract, TInstance>(this IServiceCollection services)
             where TInstance : class, TContract
         {
@@ -77,15 +66,6 @@ namespace Common.Extensions.DI
             return typeSourceSelector
                 .RegisterType<AutofacResolveFactoryContract<TInstance, TInstance>>()
                 .As<IFactory<TInstance>>();
-        }
-
-		public static ILifetimeSelector AddFactory<T>(this IAssemblySelector assemblySelector)
-            where T : class
-        {
-            return assemblySelector
-                .FromAssemblyOf<ResolveFactoryContract<T, T>>()
-                .AddClass<ResolveFactoryContract<T, T>>()
-                .As<IFactory<T>>();
         }
 
         public static void AddFactory<T>(this IServiceCollection services)
@@ -147,16 +127,6 @@ namespace Common.Extensions.DI
             }
         }
 
-        public static ILifetimeSelector AddFactoryTo<P0, TContract, TInstance>(this IAssemblySelector assemblySelector)
-            where TInstance : class, TContract
-        {
-            return assemblySelector
-                .FromAssemblyOf<ResolveFactoryContract<P0, TContract, TInstance>>()
-                .AddClasses(filter => filter.AssignableTo(typeof(ResolveFactoryContract<,,>)))
-                .AsSelf()
-                .AsImplementedInterfaces();
-        }
-
         public static void AddFactoryTo<P0, TContract, TInstance>(this IServiceCollection services)
             where TInstance : class, TContract
         {
@@ -188,15 +158,6 @@ namespace Common.Extensions.DI
             return typeSourceSelector
                 .RegisterType<AutofacResolveFactoryContract<P0, TInstance, TInstance>>()
                 .As<IFactory<P0, TInstance>>();
-        }
-
-		public static ILifetimeSelector AddFactory<P0, T>(this IAssemblySelector assemblySelector)
-            where T : class
-        {
-            return assemblySelector
-                .FromAssemblyOf<ResolveFactoryContract<P0, T, T>>()
-                .AddClass<ResolveFactoryContract<P0, T, T>>()
-                .As<IFactory<P0, T>>();
         }
 
         public static void AddFactory<P0, T>(this IServiceCollection services)
@@ -258,16 +219,6 @@ namespace Common.Extensions.DI
             }
         }
 
-        public static ILifetimeSelector AddFactoryTo<P0, P1, TContract, TInstance>(this IAssemblySelector assemblySelector)
-            where TInstance : class, TContract
-        {
-            return assemblySelector
-                .FromAssemblyOf<ResolveFactoryContract<P0, P1, TContract, TInstance>>()
-                .AddClasses(filter => filter.AssignableTo(typeof(ResolveFactoryContract<,,,>)))
-                .AsSelf()
-                .AsImplementedInterfaces();
-        }
-
         public static void AddFactoryTo<P0, P1, TContract, TInstance>(this IServiceCollection services)
             where TInstance : class, TContract
         {
@@ -299,15 +250,6 @@ namespace Common.Extensions.DI
             return typeSourceSelector
                 .RegisterType<AutofacResolveFactoryContract<P0, P1, TInstance, TInstance>>()
                 .As<IFactory<P0, P1, TInstance>>();
-        }
-
-		public static ILifetimeSelector AddFactory<P0, P1, T>(this IAssemblySelector assemblySelector)
-            where T : class
-        {
-            return assemblySelector
-                .FromAssemblyOf<ResolveFactoryContract<P0, P1, T, T>>()
-                .AddClass<ResolveFactoryContract<P0, P1, T, T>>()
-                .As<IFactory<P0, P1, T>>();
         }
 
         public static void AddFactory<P0, P1, T>(this IServiceCollection services)
@@ -369,16 +311,6 @@ namespace Common.Extensions.DI
             }
         }
 
-        public static ILifetimeSelector AddFactoryTo<P0, P1, P2, TContract, TInstance>(this IAssemblySelector assemblySelector)
-            where TInstance : class, TContract
-        {
-            return assemblySelector
-                .FromAssemblyOf<ResolveFactoryContract<P0, P1, P2, TContract, TInstance>>()
-                .AddClasses(filter => filter.AssignableTo(typeof(ResolveFactoryContract<,,,,>)))
-                .AsSelf()
-                .AsImplementedInterfaces();
-        }
-
         public static void AddFactoryTo<P0, P1, P2, TContract, TInstance>(this IServiceCollection services)
             where TInstance : class, TContract
         {
@@ -410,15 +342,6 @@ namespace Common.Extensions.DI
             return typeSourceSelector
                 .RegisterType<AutofacResolveFactoryContract<P0, P1, P2, TInstance, TInstance>>()
                 .As<IFactory<P0, P1, P2, TInstance>>();
-        }
-
-		public static ILifetimeSelector AddFactory<P0, P1, P2, T>(this IAssemblySelector assemblySelector)
-            where T : class
-        {
-            return assemblySelector
-                .FromAssemblyOf<ResolveFactoryContract<P0, P1, P2, T, T>>()
-                .AddClass<ResolveFactoryContract<P0, P1, P2, T, T>>()
-                .As<IFactory<P0, P1, P2, T>>();
         }
 
         public static void AddFactory<P0, P1, P2, T>(this IServiceCollection services)
@@ -480,16 +403,6 @@ namespace Common.Extensions.DI
             }
         }
 
-        public static ILifetimeSelector AddFactoryTo<P0, P1, P2, P3, TContract, TInstance>(this IAssemblySelector assemblySelector)
-            where TInstance : class, TContract
-        {
-            return assemblySelector
-                .FromAssemblyOf<ResolveFactoryContract<P0, P1, P2, P3, TContract, TInstance>>()
-                .AddClasses(filter => filter.AssignableTo(typeof(ResolveFactoryContract<,,,,,>)))
-                .AsSelf()
-                .AsImplementedInterfaces();
-        }
-
         public static void AddFactoryTo<P0, P1, P2, P3, TContract, TInstance>(this IServiceCollection services)
             where TInstance : class, TContract
         {
@@ -521,15 +434,6 @@ namespace Common.Extensions.DI
             return typeSourceSelector
                 .RegisterType<AutofacResolveFactoryContract<P0, P1, P2, P3, TInstance, TInstance>>()
                 .As<IFactory<P0, P1, P2, P3, TInstance>>();
-        }
-
-		public static ILifetimeSelector AddFactory<P0, P1, P2, P3, T>(this IAssemblySelector assemblySelector)
-            where T : class
-        {
-            return assemblySelector
-                .FromAssemblyOf<ResolveFactoryContract<P0, P1, P2, P3, T, T>>()
-                .AddClass<ResolveFactoryContract<P0, P1, P2, P3, T, T>>()
-                .As<IFactory<P0, P1, P2, P3, T>>();
         }
 
         public static void AddFactory<P0, P1, P2, P3, T>(this IServiceCollection services)
@@ -591,16 +495,6 @@ namespace Common.Extensions.DI
             }
         }
 
-        public static ILifetimeSelector AddFactoryTo<P0, P1, P2, P3, P4, TContract, TInstance>(this IAssemblySelector assemblySelector)
-            where TInstance : class, TContract
-        {
-            return assemblySelector
-                .FromAssemblyOf<ResolveFactoryContract<P0, P1, P2, P3, P4, TContract, TInstance>>()
-                .AddClasses(filter => filter.AssignableTo(typeof(ResolveFactoryContract<,,,,,,>)))
-                .AsSelf()
-                .AsImplementedInterfaces();
-        }
-
         public static void AddFactoryTo<P0, P1, P2, P3, P4, TContract, TInstance>(this IServiceCollection services)
             where TInstance : class, TContract
         {
@@ -632,15 +526,6 @@ namespace Common.Extensions.DI
             return typeSourceSelector
                 .RegisterType<AutofacResolveFactoryContract<P0, P1, P2, P3, P4, TInstance, TInstance>>()
                 .As<IFactory<P0, P1, P2, P3, P4, TInstance>>();
-        }
-
-		public static ILifetimeSelector AddFactory<P0, P1, P2, P3, P4, T>(this IAssemblySelector assemblySelector)
-            where T : class
-        {
-            return assemblySelector
-                .FromAssemblyOf<ResolveFactoryContract<P0, P1, P2, P3, P4, T, T>>()
-                .AddClass<ResolveFactoryContract<P0, P1, P2, P3, P4, T, T>>()
-                .As<IFactory<P0, P1, P2, P3, P4, T>>();
         }
 
         public static void AddFactory<P0, P1, P2, P3, P4, T>(this IServiceCollection services)
@@ -702,16 +587,6 @@ namespace Common.Extensions.DI
             }
         }
 
-        public static ILifetimeSelector AddFactoryTo<P0, P1, P2, P3, P4, P5, TContract, TInstance>(this IAssemblySelector assemblySelector)
-            where TInstance : class, TContract
-        {
-            return assemblySelector
-                .FromAssemblyOf<ResolveFactoryContract<P0, P1, P2, P3, P4, P5, TContract, TInstance>>()
-                .AddClasses(filter => filter.AssignableTo(typeof(ResolveFactoryContract<,,,,,,,>)))
-                .AsSelf()
-                .AsImplementedInterfaces();
-        }
-
         public static void AddFactoryTo<P0, P1, P2, P3, P4, P5, TContract, TInstance>(this IServiceCollection services)
             where TInstance : class, TContract
         {
@@ -743,15 +618,6 @@ namespace Common.Extensions.DI
             return typeSourceSelector
                 .RegisterType<AutofacResolveFactoryContract<P0, P1, P2, P3, P4, P5, TInstance, TInstance>>()
                 .As<IFactory<P0, P1, P2, P3, P4, P5, TInstance>>();
-        }
-
-		public static ILifetimeSelector AddFactory<P0, P1, P2, P3, P4, P5, T>(this IAssemblySelector assemblySelector)
-            where T : class
-        {
-            return assemblySelector
-                .FromAssemblyOf<ResolveFactoryContract<P0, P1, P2, P3, P4, P5, T, T>>()
-                .AddClass<ResolveFactoryContract<P0, P1, P2, P3, P4, P5, T, T>>()
-                .As<IFactory<P0, P1, P2, P3, P4, P5, T>>();
         }
 
         public static void AddFactory<P0, P1, P2, P3, P4, P5, T>(this IServiceCollection services)
@@ -813,16 +679,6 @@ namespace Common.Extensions.DI
             }
         }
 
-        public static ILifetimeSelector AddFactoryTo<P0, P1, P2, P3, P4, P5, P6, TContract, TInstance>(this IAssemblySelector assemblySelector)
-            where TInstance : class, TContract
-        {
-            return assemblySelector
-                .FromAssemblyOf<ResolveFactoryContract<P0, P1, P2, P3, P4, P5, P6, TContract, TInstance>>()
-                .AddClasses(filter => filter.AssignableTo(typeof(ResolveFactoryContract<,,,,,,,,>)))
-                .AsSelf()
-                .AsImplementedInterfaces();
-        }
-
         public static void AddFactoryTo<P0, P1, P2, P3, P4, P5, P6, TContract, TInstance>(this IServiceCollection services)
             where TInstance : class, TContract
         {
@@ -854,15 +710,6 @@ namespace Common.Extensions.DI
             return typeSourceSelector
                 .RegisterType<AutofacResolveFactoryContract<P0, P1, P2, P3, P4, P5, P6, TInstance, TInstance>>()
                 .As<IFactory<P0, P1, P2, P3, P4, P5, P6, TInstance>>();
-        }
-
-		public static ILifetimeSelector AddFactory<P0, P1, P2, P3, P4, P5, P6, T>(this IAssemblySelector assemblySelector)
-            where T : class
-        {
-            return assemblySelector
-                .FromAssemblyOf<ResolveFactoryContract<P0, P1, P2, P3, P4, P5, P6, T, T>>()
-                .AddClass<ResolveFactoryContract<P0, P1, P2, P3, P4, P5, P6, T, T>>()
-                .As<IFactory<P0, P1, P2, P3, P4, P5, P6, T>>();
         }
 
         public static void AddFactory<P0, P1, P2, P3, P4, P5, P6, T>(this IServiceCollection services)
@@ -924,16 +771,6 @@ namespace Common.Extensions.DI
             }
         }
 
-        public static ILifetimeSelector AddFactoryTo<P0, P1, P2, P3, P4, P5, P6, P7, TContract, TInstance>(this IAssemblySelector assemblySelector)
-            where TInstance : class, TContract
-        {
-            return assemblySelector
-                .FromAssemblyOf<ResolveFactoryContract<P0, P1, P2, P3, P4, P5, P6, P7, TContract, TInstance>>()
-                .AddClasses(filter => filter.AssignableTo(typeof(ResolveFactoryContract<,,,,,,,,,>)))
-                .AsSelf()
-                .AsImplementedInterfaces();
-        }
-
         public static void AddFactoryTo<P0, P1, P2, P3, P4, P5, P6, P7, TContract, TInstance>(this IServiceCollection services)
             where TInstance : class, TContract
         {
@@ -965,15 +802,6 @@ namespace Common.Extensions.DI
             return typeSourceSelector
                 .RegisterType<AutofacResolveFactoryContract<P0, P1, P2, P3, P4, P5, P6, P7, TInstance, TInstance>>()
                 .As<IFactory<P0, P1, P2, P3, P4, P5, P6, P7, TInstance>>();
-        }
-
-		public static ILifetimeSelector AddFactory<P0, P1, P2, P3, P4, P5, P6, P7, T>(this IAssemblySelector assemblySelector)
-            where T : class
-        {
-            return assemblySelector
-                .FromAssemblyOf<ResolveFactoryContract<P0, P1, P2, P3, P4, P5, P6, P7, T, T>>()
-                .AddClass<ResolveFactoryContract<P0, P1, P2, P3, P4, P5, P6, P7, T, T>>()
-                .As<IFactory<P0, P1, P2, P3, P4, P5, P6, P7, T>>();
         }
 
         public static void AddFactory<P0, P1, P2, P3, P4, P5, P6, P7, T>(this IServiceCollection services)
@@ -1035,16 +863,6 @@ namespace Common.Extensions.DI
             }
         }
 
-        public static ILifetimeSelector AddFactoryTo<P0, P1, P2, P3, P4, P5, P6, P7, P8, TContract, TInstance>(this IAssemblySelector assemblySelector)
-            where TInstance : class, TContract
-        {
-            return assemblySelector
-                .FromAssemblyOf<ResolveFactoryContract<P0, P1, P2, P3, P4, P5, P6, P7, P8, TContract, TInstance>>()
-                .AddClasses(filter => filter.AssignableTo(typeof(ResolveFactoryContract<,,,,,,,,,,>)))
-                .AsSelf()
-                .AsImplementedInterfaces();
-        }
-
         public static void AddFactoryTo<P0, P1, P2, P3, P4, P5, P6, P7, P8, TContract, TInstance>(this IServiceCollection services)
             where TInstance : class, TContract
         {
@@ -1076,15 +894,6 @@ namespace Common.Extensions.DI
             return typeSourceSelector
                 .RegisterType<AutofacResolveFactoryContract<P0, P1, P2, P3, P4, P5, P6, P7, P8, TInstance, TInstance>>()
                 .As<IFactory<P0, P1, P2, P3, P4, P5, P6, P7, P8, TInstance>>();
-        }
-
-		public static ILifetimeSelector AddFactory<P0, P1, P2, P3, P4, P5, P6, P7, P8, T>(this IAssemblySelector assemblySelector)
-            where T : class
-        {
-            return assemblySelector
-                .FromAssemblyOf<ResolveFactoryContract<P0, P1, P2, P3, P4, P5, P6, P7, P8, T, T>>()
-                .AddClass<ResolveFactoryContract<P0, P1, P2, P3, P4, P5, P6, P7, P8, T, T>>()
-                .As<IFactory<P0, P1, P2, P3, P4, P5, P6, P7, P8, T>>();
         }
 
         public static void AddFactory<P0, P1, P2, P3, P4, P5, P6, P7, P8, T>(this IServiceCollection services)
@@ -1146,16 +955,6 @@ namespace Common.Extensions.DI
             }
         }
 
-        public static ILifetimeSelector AddFactoryTo<P0, P1, P2, P3, P4, P5, P6, P7, P8, P9, TContract, TInstance>(this IAssemblySelector assemblySelector)
-            where TInstance : class, TContract
-        {
-            return assemblySelector
-                .FromAssemblyOf<ResolveFactoryContract<P0, P1, P2, P3, P4, P5, P6, P7, P8, P9, TContract, TInstance>>()
-                .AddClasses(filter => filter.AssignableTo(typeof(ResolveFactoryContract<,,,,,,,,,,,>)))
-                .AsSelf()
-                .AsImplementedInterfaces();
-        }
-
         public static void AddFactoryTo<P0, P1, P2, P3, P4, P5, P6, P7, P8, P9, TContract, TInstance>(this IServiceCollection services)
             where TInstance : class, TContract
         {
@@ -1187,15 +986,6 @@ namespace Common.Extensions.DI
             return typeSourceSelector
                 .RegisterType<AutofacResolveFactoryContract<P0, P1, P2, P3, P4, P5, P6, P7, P8, P9, TInstance, TInstance>>()
                 .As<IFactory<P0, P1, P2, P3, P4, P5, P6, P7, P8, P9, TInstance>>();
-        }
-
-		public static ILifetimeSelector AddFactory<P0, P1, P2, P3, P4, P5, P6, P7, P8, P9, T>(this IAssemblySelector assemblySelector)
-            where T : class
-        {
-            return assemblySelector
-                .FromAssemblyOf<ResolveFactoryContract<P0, P1, P2, P3, P4, P5, P6, P7, P8, P9, T, T>>()
-                .AddClass<ResolveFactoryContract<P0, P1, P2, P3, P4, P5, P6, P7, P8, P9, T, T>>()
-                .As<IFactory<P0, P1, P2, P3, P4, P5, P6, P7, P8, P9, T>>();
         }
 
         public static void AddFactory<P0, P1, P2, P3, P4, P5, P6, P7, P8, P9, T>(this IServiceCollection services)

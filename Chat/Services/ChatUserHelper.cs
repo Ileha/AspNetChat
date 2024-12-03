@@ -67,7 +67,7 @@ public class ChatUserHelper
 
         chat = _chatContainer.GetChatById(chatGuid);
 
-        if (!(await chat.HasPartisipant((Identifiable)userGuid)))
+        if (!(await chat.HasParticipant((Identifiable)userGuid)))
         {
             statusCode = HttpStatusCode.NotFound;
             message = "user not found";
@@ -75,6 +75,6 @@ public class ChatUserHelper
             return (false, statusCode, message, chat);
         }
 
-        return (false, statusCode, message, chat);
+        return (true, statusCode, message, chat);
     }
 }

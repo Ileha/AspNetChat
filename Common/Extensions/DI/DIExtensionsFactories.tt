@@ -3,7 +3,6 @@
 <#@ import namespace="System.Linq" #>
 <#@ output extension=".cs" #>
 using Microsoft.Extensions.DependencyInjection;
-using Scrutor;
 using Autofac;
 using Autofac.Builder;
 
@@ -51,16 +50,6 @@ else
             }
         }
 
-        public static ILifetimeSelector AddFactoryTo<<#= string.Join(", ", Enumerable.Repeat(0, i).Select((_, j) => $"P{j}")) #><#= i==0 ? "" : ", "#>TContract, TInstance>(this IAssemblySelector assemblySelector)
-            where TInstance : class, TContract
-        {
-            return assemblySelector
-                .FromAssemblyOf<ResolveFactoryContract<<#= string.Join(", ", Enumerable.Repeat(0, i).Select((_, j) => $"P{j}")) #><#= i==0 ? "" : ", "#>TContract, TInstance>>()
-                .AddClasses(filter => filter.AssignableTo(typeof(ResolveFactoryContract<<#= string.Join("", Enumerable.Repeat(0, i+1).Select(_ => ",")) #>>)))
-                .AsSelf()
-                .AsImplementedInterfaces();
-        }
-
         public static void AddFactoryTo<<#= string.Join(", ", Enumerable.Repeat(0, i).Select((_, j) => $"P{j}")) #><#= i==0 ? "" : ", "#>TContract, TInstance>(this IServiceCollection services)
             where TInstance : class, TContract
         {
@@ -101,15 +90,6 @@ else
             return typeSourceSelector
                 .RegisterType<AutofacResolveFactoryContract<<#= string.Join(", ", Enumerable.Repeat(0, i).Select((_, j) => $"P{j}")) #><#= i==0 ? "" : ", "#>TInstance, TInstance>>()
                 .As<IFactory<<#= string.Join(", ", Enumerable.Repeat(0, i).Select((_, j) => $"P{j}")) #><#= i==0 ? "" : ", "#>TInstance>>();
-        }
-
-		public static ILifetimeSelector AddFactory<<#= string.Join(", ", Enumerable.Repeat(0, i).Select((_, j) => $"P{j}")) #><#= i==0 ? "" : ", "#>T>(this IAssemblySelector assemblySelector)
-            where T : class
-        {
-            return assemblySelector
-                .FromAssemblyOf<ResolveFactoryContract<<#= string.Join(", ", Enumerable.Repeat(0, i).Select((_, j) => $"P{j}")) #><#= i==0 ? "" : ", "#>T, T>>()
-                .AddClass<ResolveFactoryContract<<#= string.Join(", ", Enumerable.Repeat(0, i).Select((_, j) => $"P{j}")) #><#= i==0 ? "" : ", "#>T, T>>()
-                .As<IFactory<<#= string.Join(", ", Enumerable.Repeat(0, i).Select((_, j) => $"P{j}")) #><#= i==0 ? "" : ", "#>T>>();
         }
 
         public static void AddFactory<<#= string.Join(", ", Enumerable.Repeat(0, i).Select((_, j) => $"P{j}")) #><#= i==0 ? "" : ", "#>T>(this IServiceCollection services)

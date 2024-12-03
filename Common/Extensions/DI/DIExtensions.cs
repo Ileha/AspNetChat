@@ -1,18 +1,10 @@
 ﻿using Autofac;
 using Microsoft.Extensions.DependencyInjection;
-using Scrutor;
 
 namespace Common.Extensions.DI;
 
 public static partial class DIExtensions
 {
-    public static IServiceTypeSelector AddClass<T>(this IImplementationTypeSelector implementationTypeSelector)
-        where T : class
-    {
-        return implementationTypeSelector
-            .AddClasses(filter => filter.Where(type => type == typeof(T)));
-    }
-        
     internal class ContainerWrapper : IServiceProvider
     {
         private readonly IComponentContext _context;

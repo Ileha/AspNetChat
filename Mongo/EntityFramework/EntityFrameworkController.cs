@@ -4,20 +4,21 @@ using Common.Extensions.DI;
 using Common.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Mongo.Entities;
+using Mongo.Interfaces;
 
 namespace Mongo.EntityFramework;
 
 public class EntityFrameworkController : IUserStorage, IDataBaseService
 {
     private readonly IFactory<IIdentifiable, CancellationToken, IChatStorage> _chatStorageFactory;
-    private readonly EntityFrameworkDbContext _dbContext;
+    private readonly IDataBaseTransaction<EntityFrameworkDbContext> _dbContext;
     
     public EntityFrameworkController(
         IFactory<
             IIdentifiable, 
             CancellationToken, 
             IChatStorage> chatStorageFactory,
-        EntityFrameworkDbContext dbContext)
+        IDataBaseTransaction<EntityFrameworkDbContext> dbContext)
     {
         _chatStorageFactory = chatStorageFactory ?? throw new ArgumentNullException(nameof(chatStorageFactory));
         _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
@@ -25,18 +26,22 @@ public class EntityFrameworkController : IUserStorage, IDataBaseService
 
     public async Task<IChatParticipant> AddOrGetParticipant(IIdentifiable identifiable, IChatParticipant participant)
     {
-        var dbUser = await _dbContext.Users.FirstOrDefaultAsync(user => user.Name == participant.Name);
-        
-        if (dbUser != null)
-            return new MongoChatParticipant(dbUser);
-        
-        var mongoUser = new User() { Id = participant.Id, Name = participant.Name };
+        return await _dbContext
+            .PerformTransactionAsync(async context =>
+            {
+                var dbUser = await context.Users.FirstOrDefaultAsync(user => user.Name == participant.Name);
 
-        await _dbContext.Users.AddAsync(mongoUser);
+                if (dbUser != null)
+                    return new MongoChatParticipant(dbUser);
 
-        await _dbContext.SaveChangesAsync();
+                var mongoUser = new User() {Id = participant.Id, Name = participant.Name};
 
-        return participant;
+                await context.Users.AddAsync(mongoUser);
+
+                await context.SaveChangesAsync();
+
+                return participant;
+            });
     }
 
     public IChatStorage GetChatStorage(IIdentifiable chat)
@@ -46,10 +51,14 @@ public class EntityFrameworkController : IUserStorage, IDataBaseService
 
     public async Task<bool> HasChat(IIdentifiable chat)
     {
-        var eventsAmount = await _dbContext.UserChatEvents
-            .Where(chatEvent => chatEvent.UserId == chat.Id)
-            .CountAsync();
-
-        return eventsAmount > 0;
+        return await _dbContext
+            .PerformTransactionAsync(async context =>
+            {
+                var eventsAmount = await context.UserChatEvents
+                    .Where(chatEvent => chatEvent.ChatId == chat.Id)
+                    .CountAsync();
+                
+                return eventsAmount > 0;
+            });
     }
 }

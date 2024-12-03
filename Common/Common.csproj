@@ -46,7 +46,7 @@
     <ItemGroup>
       <PackageReference Include="Autofac.AspNetCore.Multitenant" Version="8.0.0" />
       <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.1" />
-      <PackageReference Include="Scrutor.AspNetCore" Version="3.3.0" />
+      <PackageReference Include="ParallelExtensionsExtras" Version="1.2.0" />
     </ItemGroup>
 
 </Project>

@@ -33,6 +33,6 @@ public class MessageReceiverService : IMessageReceiverService
 			return;
 		}
 
-		userAndChatResult.chat.SendMessage((Identifiable)userGuid, message);
+		await userAndChatResult.chat.SendMessage((Identifiable)userGuid, message);
 	}
 }

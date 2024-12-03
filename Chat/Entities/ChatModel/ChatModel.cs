@@ -63,46 +63,46 @@ public class ChatModel : IChat
 		
 		await _chatParams.ChatStorage.AddEvent(@event);
 
-		PostEvents();
+		await PostEvents();
 
 		return realParticipant;
 	}
 
-	public async Task SendMessage(IIdentifiable partisipant, string message)
+	public async Task SendMessage(IIdentifiable participant, string message)
 	{
-		var @event = _userSendMessageFactory.Create(new UserSendMessage.NewParams(partisipant.Id, message, GetTime()));
+		var @event = _userSendMessageFactory.Create(new UserSendMessage.NewParams(participant.Id, message, GetTime()));
 		
 		var extractor = await ApplyVisitor2ChatEvents(_usersCountsExtractorFactory.Create());
 
-		if (!extractor.ParticipantsCount.TryGetValue(partisipant, out var participantsCount) || participantsCount < 1)
-			throw new InvalidOperationException($"Participant with {partisipant.Id} is not exist or not joined to chat");
+		if (!extractor.ParticipantsCount.TryGetValue(participant, out var participantsCount) || participantsCount < 1)
+			throw new InvalidOperationException($"Participant with {participant.Id} is not exist or not joined to chat");
 		
 		await _chatParams.ChatStorage.AddEvent(@event);
 
-		PostEvents();
+		await PostEvents();
 	}
 
-	public async Task DisconnectedParticipant(IIdentifiable partisipant)
+	public async Task DisconnectedParticipant(IIdentifiable participant)
 	{
-		var @event = _userDisconnected.Create(new UserDisconnected.NewParams(partisipant.Id, GetTime()));
+		var @event = _userDisconnected.Create(new UserDisconnected.NewParams(participant.Id, GetTime()));
 		
 		var extractor = await ApplyVisitor2ChatEvents(_usersCountsExtractorFactory.Create());
 		
-		if (!extractor.ParticipantsCount.TryGetValue(partisipant, out var participantsCount) || participantsCount < 1)
-			throw new InvalidOperationException($"Participant with {partisipant.Id} is not exist or not joined to chat");
+		if (!extractor.ParticipantsCount.TryGetValue(participant, out var participantsCount) || participantsCount < 1)
+			throw new InvalidOperationException($"Participant with {participant.Id} is not exist or not joined to chat");
 		
 		await _chatParams.ChatStorage.AddEvent(@event);
 
-		PostEvents();
+		await PostEvents();
 	}
 
-	public async Task<bool> HasPartisipant(IIdentifiable partisipant)
+	public async Task<bool> HasParticipant(IIdentifiable participant)
 	{
 		var extractor = await ApplyVisitor2ChatEvents(_usersExtractorFactory.Create());
 
 		var users = extractor.ToHashSet(new IdentifiableEqualityComparer());
 
-		return users.Contains(partisipant);
+		return users.Contains(participant);
 	}
 
 	private async Task<T> ApplyVisitor2ChatEvents<T>(T eventVisitor)

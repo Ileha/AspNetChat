@@ -2,7 +2,7 @@ using Chat.Entities.ChatModel.Events;
 using Chat.Interfaces.ChatEvents;
 using Common.Extensions.DI;
 using Mongo.Entities;
-using Mongo.Inerfaces;
+using Mongo.Interfaces;
 using UserDisconnected = Chat.Entities.ChatModel.Events.UserDisconnected;
 using UserSendMessage = Chat.Entities.ChatModel.Events.UserSendMessage;
 
